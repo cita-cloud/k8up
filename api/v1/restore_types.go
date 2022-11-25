@@ -30,6 +30,10 @@ type RestoreSpec struct {
 	SuccessfulJobsHistoryLimit *int `json:"successfulJobsHistoryLimit,omitempty"`
 	// Tags is a list of arbitrary tags that get added to the backup via Restic's tagging system
 	Tags []string `json:"tags,omitempty"`
+	// Chain
+	Chain string `json:"chain"`
+	// Node
+	Node string `json:"node"`
 }
 
 // RestoreMethod contains how and where the restore should happen
