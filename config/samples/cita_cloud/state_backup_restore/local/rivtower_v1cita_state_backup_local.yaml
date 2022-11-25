@@ -1,0 +1,27 @@
+apiVersion: rivtower.com/v1cita
+kind: Backup
+metadata:
+  name: state-backup-to-local
+  namespace: zhujq
+spec:
+  node: test-chain-zenoh-overlord-node0
+  deployMethod: cloud-config
+  action: StopAndStart
+  chain: test-chain-zenoh-overlord
+  dataType:
+    state:
+      blockHeight: 50
+
+  failedJobsHistoryLimit: 2
+  successfulJobsHistoryLimit: 2
+#  tags:
+#    - test
+#    - dump
+#    - mariadb
+  backend:
+    repoPasswordSecretRef:
+      name: backup-repo
+      key: password
+    local:
+      mountPath: "/hello"
+      storageClass: "nas-client-provisioner"

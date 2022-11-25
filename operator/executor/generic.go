@@ -6,12 +6,13 @@ package executor
 
 import (
 	"context"
+	"k8s.io/apimachinery/pkg/api/errors"
+	controllerruntime "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	k8upv1 "github.com/k8up-io/k8up/v2/api/v1"
 	"github.com/k8up-io/k8up/v2/operator/executor/cleaner"
 	"github.com/k8up-io/k8up/v2/operator/job"
-	controllerruntime "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type Generic struct {
@@ -53,4 +54,29 @@ func (g *Generic) CleanupOldResources(ctx context.Context, typ jobObjectList, na
 	}
 	g.SetConditionTrueWithMessage(ctx, k8upv1.ConditionScrubbed, k8upv1.ReasonSucceeded, "Deleted %d resources", deleted)
 
+}
+
+// CreateObjectIfNotExisting tries to create the given object, but ignores AlreadyExistsError.
+// If it fails for any other reason, the Ready condition is set to False with the error message and reason.
+func (g *Generic) CreateObjectIfNotExisting(ctx context.Context, obj client.Object) error {
+	err := g.Client.Create(ctx, obj)
+	if err != nil && !errors.IsAlreadyExists(err) {
+		g.SetConditionFalseWithMessage(
+			ctx,
+			k8upv1.ConditionReady,
+			k8upv1.ReasonCreationFailed,
+			"unable to create %v '%v/%v': %v",
+			obj.GetObjectKind().GroupVersionKind().Kind,
+			obj.GetNamespace(), obj.GetName(), err.Error())
+		return err
+	}
+	return nil
+}
+
+func BuildIncludePathArgs(includePathList []string) []string {
+	var args []string
+	for i := range includePathList {
+		args = append(args, "--path", includePathList[i])
+	}
+	return args
 }

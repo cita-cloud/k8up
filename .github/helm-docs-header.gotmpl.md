@@ -10,6 +10,6 @@
 ## Installation
 
 ```bash
-helm repo add k8up-io https://k8up-io.github.io/k8up
+helm repo add k8up-io https://cita-cloud.github.io/k8up
 helm install {{ template "chart.name" . }} k8up-io/{{ template "chart.name" . }}
 ```

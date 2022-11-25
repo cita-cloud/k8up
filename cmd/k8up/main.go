@@ -14,6 +14,8 @@ import (
 	controllerzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	"github.com/k8up-io/k8up/v2/cmd"
+	"github.com/k8up-io/k8up/v2/cmd/citacloud/fallback"
+	"github.com/k8up-io/k8up/v2/cmd/citacloud/switchover"
 	k8upcli "github.com/k8up-io/k8up/v2/cmd/cli"
 	"github.com/k8up-io/k8up/v2/cmd/operator"
 	"github.com/k8up-io/k8up/v2/cmd/restic"
@@ -83,6 +85,8 @@ func app() *cli.App {
 			operator.Command,
 			restic.Command,
 			k8upcli.Command,
+			fallback.Command,
+			switchover.Command,
 		},
 	}
 }

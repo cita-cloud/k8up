@@ -23,45 +23,59 @@ snapshot:
 
 dockers:
 - image_templates:
-  - "ghcr.io/k8up-io/k8up:v{{ .Version }}-amd64"
-  - "quay.io/k8up-io/k8up:v{{ .Version }}-amd64"
+#  - "ghcr.io/k8up-io/k8up:v{{ .Version }}-amd64"
+#  - "quay.io/k8up-io/k8up:v{{ .Version }}-amd64"
+  - "registry.devops.rivtower.com/cita-cloud/cita-node:v{{ .Version }}-amd64"
   goarch: amd64
   use: buildx
   build_flag_templates:
+  - "--build-arg=CLOUD_OP_REGISTRY=registry.devops.rivtower.com"
+  - "--build-arg=CLOUD_OP_TAG=v0.2.4"
   - "--platform=linux/amd64"
   extra_files: &dockers_extra_files
   - fetch_restic.sh
   - go.mod
 - image_templates:
-  - "ghcr.io/k8up-io/k8up:v{{ .Version }}-arm64"
-  - "quay.io/k8up-io/k8up:v{{ .Version }}-arm64"
+#  - "ghcr.io/k8up-io/k8up:v{{ .Version }}-arm64"
+#  - "quay.io/k8up-io/k8up:v{{ .Version }}-arm64"
+  - "registry.devops.rivtower.com/cita-cloud/cita-node:v{{ .Version }}-arm64"
   goarch: arm64
   use: buildx
   build_flag_templates:
+  - "--build-arg=CLOUD_OP_REGISTRY=registry.devops.rivtower.com"
+  - "--build-arg=CLOUD_OP_TAG=v0.2.4"
   - "--platform=linux/arm64"
   extra_files: *dockers_extra_files
 
 docker_manifests:
-- name_template: "ghcr.io/k8up-io/k8up:v{{ .Version }}"
-  image_templates: &ghcr
-    - "ghcr.io/k8up-io/k8up:v{{ .Version }}-amd64"
-    - "ghcr.io/k8up-io/k8up:v{{ .Version }}-arm64"
-- name_template: "quay.io/k8up-io/k8up:v{{ .Version }}"
-  image_templates: &quay
-    - "quay.io/k8up-io/k8up:v{{ .Version }}-amd64"
-    - "quay.io/k8up-io/k8up:v{{ .Version }}-arm64"
+#- name_template: "ghcr.io/k8up-io/k8up:v{{ .Version }}"
+#  image_templates: &ghcr
+#    - "ghcr.io/k8up-io/k8up:v{{ .Version }}-amd64"
+#    - "ghcr.io/k8up-io/k8up:v{{ .Version }}-arm64"
+#- name_template: "quay.io/k8up-io/k8up:v{{ .Version }}"
+#  image_templates: &quay
+#    - "quay.io/k8up-io/k8up:v{{ .Version }}-amd64"
+#    - "quay.io/k8up-io/k8up:v{{ .Version }}-arm64"
+- name_template: "registry.devops.rivtower.com/cita-cloud/cita-node:v{{ .Version }}"
+  image_templates: &harbor
+    - "registry.devops.rivtower.com/cita-cloud/cita-node:v{{ .Version }}-amd64"
+    - "registry.devops.rivtower.com/cita-cloud/cita-node:v{{ .Version }}-arm64"
 
   # For prereleases, updating `latest` and the floating tags of the major version does not make sense.
   # Only the image for the exact version should be pushed.
-- name_template: "{{ if not .Prerelease }}ghcr.io/k8up-io/k8up:v{{ .Major }}{{ end }}"
-  image_templates: *ghcr
-- name_template: "{{ if not .Prerelease }}quay.io/k8up-io/k8up:v{{ .Major }}{{ end }}"
-  image_templates: *quay
+#- name_template: "{{ if not .Prerelease }}ghcr.io/k8up-io/k8up:v{{ .Major }}{{ end }}"
+#  image_templates: *ghcr
+#- name_template: "{{ if not .Prerelease }}quay.io/k8up-io/k8up:v{{ .Major }}{{ end }}"
+#  image_templates: *quay
+- name_template: "{{ if not .Prerelease }}registry.devops.rivtower.com/cita-cloud/cita-node:v{{ .Major }}{{ end }}"
+  image_templates: *harbor
 
-- name_template: "{{ if not .Prerelease }}ghcr.io/k8up-io/k8up:latest{{ end }}"
-  image_templates: *ghcr
-- name_template: "{{ if not .Prerelease }}quay.io/k8up-io/k8up:latest{{ end }}"
-  image_templates: *quay
+#- name_template: "{{ if not .Prerelease }}ghcr.io/k8up-io/k8up:latest{{ end }}"
+#  image_templates: *ghcr
+#- name_template: "{{ if not .Prerelease }}quay.io/k8up-io/k8up:latest{{ end }}"
+#  image_templates: *quay
+- name_template: "{{ if not .Prerelease }}registry.devops.rivtower.com/cita-cloud/cita-node:latest{{ end }}"
+  image_templates: *harbor
 
 release:
   prerelease: auto
