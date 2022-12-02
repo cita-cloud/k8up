@@ -6,12 +6,16 @@ package executor
 
 import (
 	"context"
+	"strings"
+
+	appv1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/types"
+	controllerruntime "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	k8upv1 "github.com/k8up-io/k8up/v2/api/v1"
 	"github.com/k8up-io/k8up/v2/operator/executor/cleaner"
 	"github.com/k8up-io/k8up/v2/operator/job"
-	controllerruntime "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type Generic struct {
@@ -53,4 +57,48 @@ func (g *Generic) CleanupOldResources(ctx context.Context, typ jobObjectList, na
 	}
 	g.SetConditionTrueWithMessage(ctx, k8upv1.ConditionScrubbed, k8upv1.ReasonSucceeded, "Deleted %d resources", deleted)
 
+}
+
+func BuildIncludePathArgs(includePathList []string) []string {
+	var args []string
+	for i := range includePathList {
+		args = append(args, "--path", includePathList[i])
+	}
+	return args
+}
+
+func (g *Generic) getObject(namespace, name string, object client.Object) error {
+	err := g.Client.Get(g.CTX, types.NamespacedName{Namespace: namespace, Name: name}, object)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *Generic) GetCryptoAndConsensus(namespace, name string) (string, string, error) {
+	sts := &appv1.StatefulSet{}
+	err := g.Client.Get(g.CTX, types.NamespacedName{Namespace: namespace, Name: name}, sts)
+	if err != nil {
+		return "", "", err
+	}
+
+	var crypto, consensus string
+	for _, container := range sts.Spec.Template.Spec.Containers {
+		if container.Name == "crypto" || container.Name == "kms" {
+			if strings.Contains(container.Image, "sm") {
+				crypto = "sm"
+			} else if strings.Contains(container.Image, "eth") {
+				crypto = "eth"
+			}
+		} else if container.Name == "consensus" {
+			if strings.Contains(container.Image, "bft") {
+				consensus = "bft"
+			} else if strings.Contains(container.Image, "raft") {
+				consensus = "raft"
+			} else if strings.Contains(container.Image, "overlord") {
+				consensus = "overlord"
+			}
+		}
+	}
+	return crypto, consensus, nil
 }

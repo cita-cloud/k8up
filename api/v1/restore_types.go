@@ -31,9 +31,11 @@ type RestoreSpec struct {
 	// Tags is a list of arbitrary tags that get added to the backup via Restic's tagging system
 	Tags []string `json:"tags,omitempty"`
 	// Chain
-	Chain string `json:"chain"`
+	Chain string `json:"chain,omitempty"`
 	// Node
-	Node string `json:"node"`
+	Node string `json:"node,omitempty"`
+	// Backup
+	Backup string `json:"backup,omitempty"`
 }
 
 // RestoreMethod contains how and where the restore should happen
