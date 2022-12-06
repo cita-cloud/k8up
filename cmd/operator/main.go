@@ -109,6 +109,7 @@ func operatorMain(c *cli.Context) error {
 		return fmt.Errorf("unable to initialize controller runtime: %w", err)
 	}
 
+	//<<<<<<< HEAD
 	for name, setupFn := range map[string]func(mgr ctrl.Manager) error{
 		"Schedule": schedulecontroller.SetupWithManager,
 		"Backup":   backupcontroller.SetupWithManager,
@@ -116,6 +117,18 @@ func operatorMain(c *cli.Context) error {
 		"Archive":  archivecontroller.SetupWithManager,
 		"Check":    checkcontroller.SetupWithManager,
 		"Prune":    prunecontroller.SetupWithManager,
+		//=======
+		//	for name, reconciler := range map[string]controllers.ReconcilerSetup{
+		//		"Schedule":            &controllers.ScheduleReconciler{},
+		//		"Backup":              &controllers.BackupReconciler{},
+		//		"Restore":             &controllers.RestoreReconciler{},
+		//		"Archive":             &controllers.ArchiveReconciler{},
+		//		"Check":               &controllers.CheckReconciler{},
+		//		"Prune":               &controllers.PruneReconciler{},
+		//		"Job":                 &controllers.JobReconciler{},
+		//		"BlockHeightFallback": &controllers.BlockHeightFallbackReconciler{},
+		//		"Switchover":          &controllers.SwitchoverReconciler{},
+		//>>>>>>> e6c49da8 (swicthover)
 	} {
 		if setupErr := setupFn(mgr); setupErr != nil {
 			operatorLog.Error(setupErr, "unable to initialize operator mode", "step", "controller", "controller", name)
