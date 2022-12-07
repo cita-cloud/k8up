@@ -33,7 +33,6 @@ type (
 		fmt.Stringer
 		EnvVars(vars map[string]*corev1.EnvVarSource) map[string]*corev1.EnvVarSource
 		String() string
-		Type() string
 	}
 )
 
@@ -113,10 +112,6 @@ func (in *LocalSpec) String() string {
 	return in.MountPath
 }
 
-func (in *LocalSpec) Type() string {
-	return "local"
-}
-
 type S3Spec struct {
 	Endpoint                 string                    `json:"endpoint,omitempty"`
 	Bucket                   string                    `json:"bucket,omitempty"`
@@ -145,10 +140,6 @@ func (in *S3Spec) String() string {
 	}
 
 	return fmt.Sprintf("s3:%v/%v", endpoint, bucket)
-}
-
-func (in *S3Spec) Type() string {
-	return "s3"
 }
 
 // RestoreEnvVars returns the env vars for this backend when using Restore jobs.
@@ -213,10 +204,6 @@ func (in *GCSSpec) String() string {
 	return fmt.Sprintf("gs:%s:/", in.Bucket)
 }
 
-func (in *GCSSpec) Type() string {
-	return "gs"
-}
-
 type AzureSpec struct {
 	Container            string                    `json:"container,omitempty"`
 	AccountNameSecretRef *corev1.SecretKeySelector `json:"accountNameSecretRef,omitempty"`
@@ -235,10 +222,6 @@ func (in *AzureSpec) String() string {
 	return fmt.Sprintf("azure:%s:/", in.Container)
 }
 
-func (in *AzureSpec) Type() string {
-	return "azure"
-}
-
 type SwiftSpec struct {
 	Container string `json:"container,omitempty"`
 	Path      string `json:"path,omitempty"`
@@ -252,10 +235,6 @@ func (in *SwiftSpec) EnvVars(vars map[string]*corev1.EnvVarSource) map[string]*c
 // String returns "swift:container:path"
 func (in *SwiftSpec) String() string {
 	return fmt.Sprintf("swift:%s:%s", in.Container, in.Path)
-}
-
-func (in *SwiftSpec) Type() string {
-	return "swift"
 }
 
 type B2Spec struct {
@@ -277,10 +256,6 @@ func (in *B2Spec) String() string {
 	return fmt.Sprintf("b2:%s:%s", in.Bucket, in.Path)
 }
 
-func (in *B2Spec) Type() string {
-	return "b2"
-}
-
 type RestServerSpec struct {
 	URL               string                    `json:"url,omitempty"`
 	UserSecretRef     *corev1.SecretKeySelector `json:"userSecretRef,omitempty"`
@@ -297,8 +272,4 @@ func (in *RestServerSpec) EnvVars(vars map[string]*corev1.EnvVarSource) map[stri
 // String returns "rest:URL"
 func (in *RestServerSpec) String() string {
 	return fmt.Sprintf("rest:%s", in.URL)
-}
-
-func (in *RestServerSpec) Type() string {
-	return "rest"
 }

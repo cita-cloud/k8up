@@ -2,9 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/k8up-io/k8up/v2/cmd/citacloud/fallback"
-	"github.com/k8up-io/k8up/v2/cmd/citacloud/switchover"
-
 	"log"
 	"os"
 	"runtime"
@@ -17,6 +14,8 @@ import (
 	controllerzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	"github.com/k8up-io/k8up/v2/cmd"
+	"github.com/k8up-io/k8up/v2/cmd/citacloud/fallback"
+	"github.com/k8up-io/k8up/v2/cmd/citacloud/switchover"
 	"github.com/k8up-io/k8up/v2/cmd/operator"
 	"github.com/k8up-io/k8up/v2/cmd/restic"
 )
