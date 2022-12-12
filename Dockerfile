@@ -1,3 +1,5 @@
+ARG CLOUD_OP_REGISTRY
+ARG CLOUD_OP_TAG
 FROM docker.io/library/alpine:3.16 as restic
 
 RUN apk add --update --no-cache \
@@ -9,7 +11,7 @@ COPY go.mod fetch_restic.sh ./
 RUN ./fetch_restic.sh /usr/local/bin/restic \
  && /usr/local/bin/restic version
 
-FROM registry.devops.rivtower.com/cita-cloud/cloud-op:latest as cloudop
+FROM ${CLOUD_OP_REGISTRY}/cita-cloud/cloud-op:${CLOUD_OP_TAG} as cloudop
 
 #FROM docker.io/library/alpine:3.16 as k8up
 FROM debian:bullseye-slim

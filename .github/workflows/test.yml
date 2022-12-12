@@ -4,12 +4,14 @@ on:
   pull_request:
     branches:
       - master
+      - master-cita
     paths-ignore:
       - charts/**
       - docs/**
   push:
     branches:
       - master
+      - master-cita
     paths-ignore:
       - charts/**
       - docs/**
@@ -43,4 +45,4 @@ jobs:
         CC_TEST_REPORTER_ID: 8b249859554fe1e4e283329f31f8cdace9ecfed692ce3cf733fd9ce22ed40594
       with:
         coverageLocations: cover.out:gocov
-        prefix: github.com/${{ github.repository }}/v2
+        prefix: github.com/k8up-io/k8up/v2

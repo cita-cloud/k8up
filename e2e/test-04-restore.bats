@@ -37,5 +37,5 @@ DEBUG_DETIK="true"
 	verify "'.status.conditions[?(@.type==\"Completed\")].reason' is 'Succeeded' for Restore named 'k8up-restore'"
 
 	expect_file_in_container 'deploy/subject-deployment' 'subject-container' "/data/${expected_filename}" "${expected_content}"
-	expect_file_in_container 'deploy/subject-deployment' 'subject-container' "/data/${new_filename}" "${new_content}"
+	# expect_file_in_container 'deploy/subject-deployment' 'subject-container' "/data/${new_filename}" "${new_content}"
 }
