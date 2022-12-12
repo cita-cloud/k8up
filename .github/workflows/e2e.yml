@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
     - master
+    - master-cita
 
 jobs:
   e2e-test:
@@ -26,7 +27,7 @@ jobs:
           ${{ runner.os }}-go-
 
     - name: Run e2e tests
-      run: make crd e2e-test -e KIND_KUBECTL_ARGS=--validate=false -e bats_args="--report-formatter junit"
+      run: make crd e2e-test -e KIND_KUBECTL_ARGS=--validate=false -e bats_args="--report-formatter junit" -e CITA_REGISTRY=${{ secrets.DOCKER_REGISTRY_ADDRESS }} -e CLOUD_OP_LATEST_TAG=latest
 
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v3

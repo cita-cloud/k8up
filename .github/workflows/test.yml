@@ -4,12 +4,14 @@ on:
   pull_request:
     branches:
       - master
+      - master-cita
     paths-ignore:
       - charts/**
       - docs/**
   push:
     branches:
       - master
+      - master-cita
     paths-ignore:
       - charts/**
       - docs/**

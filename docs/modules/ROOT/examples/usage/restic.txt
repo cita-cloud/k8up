@@ -21,6 +21,12 @@ OPTIONS:
    --promURL value                            Sets the URL of a prometheus push gateway to report metrics. [$PROM_URL]
    --webhookURL value, --statsURL value       Sets the URL of a server which will retrieve a webhook after the action completes. [$STATS_URL]
    --backupDir value                          Set from which directory the backup should be performed. (default: "/data") [$BACKUP_DIR]
+   --nodeDeployMethod value                   Method of node deploy, 'python' or 'cloud-config', customized for CITA
+   --dataType value                           Type of data, 'full' or 'state', customized for CITA
+   --blockHeight value                        The block height you want to state-backup or state-recover, customized for CITA (default: 0)
+   --crypto value                             Type of node crypto, 'sm' or 'eth', customized for CITA
+   --consensus value                          Type of node consensus, 'bft' or 'raft' or 'overlord', customized for CITA
+   --path value [ --path value ]              List of paths you want to backup
    --restoreDir value                         Set to which directory the restore should be performed. (default: "/data") [$RESTORE_DIR]
    --restoreFilter value                      Simple filter to define what should get restored. For example the PVC name
    --restoreSnap value                        Snapshot ID, if empty takes the latest snapshot

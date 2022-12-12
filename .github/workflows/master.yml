@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - master
+    - master-cita
 
 jobs:
   dist:
@@ -31,21 +32,29 @@ jobs:
           ${{ runner.os }}-go-
 
     - name: Build docker images
-      run: make docker-build -e IMG_TAG=${GITHUB_REF#refs/heads/}
+#      run: make docker-build -e IMG_TAG=${GITHUB_REF#refs/heads/}
+      run: make docker-build -e CITA_REGISTRY=${{ secrets.DOCKER_REGISTRY_ADDRESS }} -e CLOUD_OP_LATEST_TAG=latest
 
-    - name: Login to quay.io
+#    - name: Login to quay.io
+#      uses: docker/login-action@v2
+#      with:
+#        registry: quay.io
+#        username: ${{ secrets.QUAY_IO_USERNAME }}
+#        password: ${{ secrets.QUAY_IO_PASSWORD }}
+#
+#    - name: Login to GHCR
+#      uses: docker/login-action@v2
+#      with:
+#        registry: ghcr.io
+#        username: ${{ github.repository_owner }}
+#        password: ${{ secrets.GITHUB_TOKEN }}
+#
+    - name: "Login to DockerHub"
       uses: docker/login-action@v2
       with:
-        registry: quay.io
-        username: ${{ secrets.QUAY_IO_USERNAME }}
-        password: ${{ secrets.QUAY_IO_PASSWORD }}
-
-    - name: Login to GHCR
-      uses: docker/login-action@v2
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
+        registry: ${{ secrets.DOCKER_REGISTRY_ADDRESS }}
+        username: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
     - name: Push docker images
-      run: make docker-push -e IMG_TAG=${GITHUB_REF#refs/heads/}
+#      run: make docker-push -e IMG_TAG=${GITHUB_REF#refs/heads/}
+      run: make docker-push -e CITA_REGISTRY=${{ secrets.DOCKER_REGISTRY_ADDRESS }}

@@ -1,3 +1,5 @@
+ARG CLOUD_OP_REGISTRY
+ARG CLOUD_OP_TAG
 FROM docker.io/library/alpine:3.17 as restic
 
 RUN apk add --update --no-cache \
