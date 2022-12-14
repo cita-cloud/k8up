@@ -1,24 +1,22 @@
 package executor
 
 import (
-	"context"
 	stderrors "errors"
 	"fmt"
 	"strconv"
-
-	batchv1 "k8s.io/api/batch/v1"
-	corev1 "k8s.io/api/core/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	k8upv1 "github.com/k8up-io/k8up/v2/api/v1cita"
 	"github.com/k8up-io/k8up/v2/operator/cfg"
 	"github.com/k8up-io/k8up/v2/operator/job"
 	"github.com/k8up-io/k8up/v2/operator/observer"
+	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 type BlockHeightFallbackExecutor struct {
 	generic
-	bhf *k8upv1.BlockHeightFallback
+	bhf  *k8upv1.BlockHeightFallback
+	node Node
 }
 
 // NewBlockHeightFallbackExecutor returns a new BlockHeightFallbackExecutor.
@@ -47,6 +45,13 @@ func (b *BlockHeightFallbackExecutor) Execute() error {
 		return nil
 	}
 
+	var err error
+	// create node object
+	b.node, err = CreateNode(bhfObject.Spec.DeployMethod, bhfObject.Namespace, bhfObject.Spec.Node, b.Client)
+	if err != nil {
+		return err
+	}
+
 	genericJob, err := job.GenerateGenericJob(b.Obj, b.Config)
 	if err != nil {
 		return err
@@ -56,9 +61,11 @@ func (b *BlockHeightFallbackExecutor) Execute() error {
 }
 
 func (b *BlockHeightFallbackExecutor) startBlockHeightFallback(job *batchv1.Job) error {
-	// stop node
-	node := NewCITANode(b.CTX, b.Client, b.bhf.Namespace, b.bhf.Spec.Node)
-	stopped, err := node.Stop()
+	err := b.node.Stop(b.CTX)
+	if err != nil {
+		return err
+	}
+	stopped, err := b.node.CheckStopped(b.CTX)
 	if err != nil {
 		return err
 	}
@@ -72,7 +79,6 @@ func (b *BlockHeightFallbackExecutor) startBlockHeightFallback(job *batchv1.Job)
 	volumes := b.prepareVolumes()
 
 	job.Spec.Template.Spec.Volumes = volumes
-	//job.Spec.Template.Spec.ServiceAccountName = "cita-node-job"
 	job.Spec.Template.Spec.Containers[0].VolumeMounts = b.newVolumeMounts()
 
 	args, err := b.args()
@@ -138,10 +144,16 @@ func (b *BlockHeightFallbackExecutor) registerCITANodeCallback() {
 	observer.GetObserver().RegisterCallback(name.String(), func(_ observer.ObservableJob) {
 		//b.StopPreBackupDeployments()
 		//b.cleanupOldBackups(name)
-		b.startCITANode(b.CTX, b.Client, b.bhf.Namespace, b.bhf.Spec.Node)
+		b.startCITANode()
 	})
 }
 
-func (b *BlockHeightFallbackExecutor) startCITANode(ctx context.Context, client client.Client, namespace, name string) {
-	NewCITANode(ctx, client, namespace, name).Start()
+func (b *BlockHeightFallbackExecutor) startCITANode() {
+	err := b.node.Start(b.CTX)
+	if err != nil {
+		// todo event
+		return
+	}
+	// todo event
+	return
 }

@@ -237,6 +237,8 @@ spec:
                     properties:
                       mountPath:
                         type: string
+                      size:
+                        type: string
                       storageClass:
                         type: string
                     type: object
@@ -376,6 +378,9 @@ spec:
                         type: integer
                     type: object
                 type: object
+              deployMethod:
+                description: DeployMethod
+                type: string
               failedJobsHistoryLimit:
                 description: FailedJobsHistoryLimit amount of failed jobs to keep
                   for later analysis. KeepJobs is used property is not specified.

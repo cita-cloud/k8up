@@ -2,11 +2,11 @@ apiVersion: rivtower.com/v1cita
 kind: Backup
 metadata:
   name: full-backup-to-s3
-  namespace: zhujq
+  namespace: app-rivspace
 spec:
-  node: test-chain-zenoh-overlord-node0
-  deployMethod: cita-cloud
-  chain: test-chain-zenoh-overlord
+  node: chain-800049219682570240-0
+  deployMethod: python
+  chain: chain-800049219682570240
   dataType:
     full:
       includePaths:

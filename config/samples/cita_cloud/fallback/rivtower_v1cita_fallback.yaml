@@ -6,5 +6,6 @@ metadata:
 spec:
   blockHeight: 1000
   node: test-chain-zenoh-overlord-node0
+  deployMethod: cita-cloud
   chain: test-chain-zenoh-overlord
 

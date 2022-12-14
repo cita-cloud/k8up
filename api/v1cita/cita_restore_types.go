@@ -17,6 +17,8 @@ type RestoreSpec struct {
 	Chain string `json:"chain,omitempty"`
 	// Node
 	Node string `json:"node,omitempty"`
+	// DeployMethod
+	DeployMethod DeployMethod `json:"deployMethod,omitempty"`
 	// Backup
 	Backup string `json:"backup,omitempty"`
 }

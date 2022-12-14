@@ -5,6 +5,7 @@ metadata:
   namespace: zhujq
 spec:
   chain: test-chain-zenoh-overlord
+  deployMethod: cita-cloud
   node: test-chain-zenoh-overlord-node0
   backup: full-backup-to-s3
 #  podSecurityContext:

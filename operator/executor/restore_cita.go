@@ -1,7 +1,6 @@
 package executor
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -14,7 +13,6 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // CITARestoreExecutor creates a batch.job object on the cluster. It merges all the
@@ -22,6 +20,7 @@ import (
 type CITARestoreExecutor struct {
 	generic
 	backup *citav1.Backup
+	node   Node
 }
 
 // NewCITARestoreExecutor returns a new BackupExecutor.
@@ -55,14 +54,23 @@ func (r *CITARestoreExecutor) Execute() error {
 	}
 	r.backup = backup
 
+	// create node object
+	r.node, err = CreateNode(restore.Spec.DeployMethod, restore.Namespace, restore.Spec.Node, r.Client)
+	if err != nil {
+		return err
+	}
+
 	return r.startRestore(restore)
 
 	//return nil
 }
 
 func (r *CITARestoreExecutor) startRestore(restore *citav1.Restore) error {
-	node := NewCITANode(r.CTX, r.Client, restore.Namespace, restore.Spec.Node)
-	stopped, err := node.Stop()
+	err := r.node.Stop(r.CTX)
+	if err != nil {
+		return err
+	}
+	stopped, err := r.node.CheckStopped(r.CTX)
 	if err != nil {
 		return err
 	}
@@ -70,7 +78,6 @@ func (r *CITARestoreExecutor) startRestore(restore *citav1.Restore) error {
 		return nil
 	}
 
-	//r.registerRestoreCallback(restore)
 	r.registerCITANodeCallback(restore)
 	r.RegisterJobSucceededConditionCallback()
 
@@ -96,14 +103,18 @@ func (r *CITARestoreExecutor) startRestore(restore *citav1.Restore) error {
 func (r *CITARestoreExecutor) registerCITANodeCallback(restore *citav1.Restore) {
 	name := r.GetJobNamespacedName()
 	observer.GetObserver().RegisterCallback(name.String(), func(_ observer.ObservableJob) {
-		//b.StopPreBackupDeployments()
-		//b.cleanupOldBackups(name)
-		r.startCITANode(r.CTX, r.Client, restore.Namespace, restore.Spec.Node)
+		r.startCITANode()
 	})
 }
 
-func (r *CITARestoreExecutor) startCITANode(ctx context.Context, client client.Client, namespace, name string) {
-	NewCITANode(ctx, client, namespace, name).Start()
+func (r *CITARestoreExecutor) startCITANode() {
+	err := r.node.Start(r.CTX)
+	if err != nil {
+		// todo event
+		return
+	}
+	// todo event
+	return
 }
 
 func (r *CITARestoreExecutor) buildRestoreObject(restore *citav1.Restore) (*batchv1.Job, error) {

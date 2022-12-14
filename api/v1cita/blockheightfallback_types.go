@@ -17,6 +17,8 @@ type BlockHeightFallbackSpec struct {
 	Chain string `json:"chain,omitempty"`
 	// Node
 	Node string `json:"node,omitempty"`
+	// DeployMethod
+	DeployMethod DeployMethod `json:"deployMethod,omitempty"`
 	// BlockHeight
 	BlockHeight int64 `json:"blockHeight"`
 }
