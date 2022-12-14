@@ -5,6 +5,7 @@ metadata:
   namespace: zhujq
 spec:
   node: test-chain-zenoh-overlord-node0
+  deployMethod: cita-cloud
   chain: test-chain-zenoh-overlord
   dataType:
     state:

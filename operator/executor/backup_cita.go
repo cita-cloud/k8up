@@ -4,6 +4,7 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"strconv"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -26,6 +27,7 @@ import (
 type CITABackupExecutor struct {
 	generic
 	backup *citav1.Backup
+	node   Node
 }
 
 // NewCITABackupExecutor returns a new BackupExecutor.
@@ -54,7 +56,14 @@ func (b *CITABackupExecutor) Execute() error {
 		return nil
 	}
 
-	err := b.createServiceAccountAndBinding()
+	var err error
+	// create node object
+	b.node, err = CreateNode(backupObject.Spec.DeployMethod, backupObject.Namespace, backupObject.Spec.Node, b.Client)
+	if err != nil {
+		return err
+	}
+
+	err = b.createServiceAccountAndBinding()
 	if err != nil {
 		return err
 	}
@@ -68,8 +77,11 @@ func (b *CITABackupExecutor) Execute() error {
 }
 
 func (b *CITABackupExecutor) startBackup(backupJob *batchv1.Job) error {
-	node := NewCITANode(b.CTX, b.Client, b.backup.Namespace, b.backup.Spec.Node)
-	stopped, err := node.Stop()
+	err := b.node.Stop(b.CTX)
+	if err != nil {
+		return err
+	}
+	stopped, err := b.node.CheckStopped(b.CTX)
 	if err != nil {
 		return err
 	}
@@ -77,7 +89,6 @@ func (b *CITABackupExecutor) startBackup(backupJob *batchv1.Job) error {
 		return nil
 	}
 
-	//b.registerBackupCallback()
 	b.registerCITANodeCallback()
 	b.RegisterJobSucceededConditionCallback()
 
@@ -122,50 +133,29 @@ func (b *CITABackupExecutor) startBackup(backupJob *batchv1.Job) error {
 func (b *CITABackupExecutor) registerCITANodeCallback() {
 	name := b.GetJobNamespacedName()
 	observer.GetObserver().RegisterCallback(name.String(), func(_ observer.ObservableJob) {
-		//b.StopPreBackupDeployments()
-		//b.cleanupOldBackups(name)
-		b.startCITANode(b.CTX, b.Client, b.backup.Namespace, b.backup.Spec.Node)
+		b.startCITANode()
 	})
 }
 
-func (b *CITABackupExecutor) startCITANode(ctx context.Context, client client.Client, namespace, name string) {
-	NewCITANode(ctx, client, namespace, name).Start()
+func (b *CITABackupExecutor) startCITANode() {
+	err := b.node.Start(b.CTX)
+	if err != nil {
+		// todo event
+		return
+	}
+	// todo event
+	return
 }
 
 func (b *CITABackupExecutor) prepareVolumes() ([]corev1.Volume, error) {
-	volumes := []corev1.Volume{
-		{
-			Name: "backup-source",
-			VolumeSource: corev1.VolumeSource{
-				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-					ClaimName: fmt.Sprintf("datadir-%s-0", b.backup.Spec.Node),
-					ReadOnly:  false,
-				},
-			},
-		},
+	volumes := make([]corev1.Volume, 0)
+	sourceVolume, err := b.node.GetVolume(b.CTX)
+	if err != nil {
+		return nil, err
 	}
+	volumes = append(volumes, sourceVolume)
 	if b.backup.Spec.Backend.Local != nil {
-		// create same pvc as node's pvc
-		pvcInfo, err := NewCITANode(b.CTX, b.Client, b.backup.Namespace, b.backup.Spec.Node).GetPVCInfo()
-		if err != nil {
-			return nil, err
-		}
-		destPVC := &corev1.PersistentVolumeClaim{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      b.backup.Name,
-				Namespace: b.backup.Namespace,
-			},
-			Spec: corev1.PersistentVolumeClaimSpec{
-				AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-				Resources:        pvcInfo,
-				StorageClassName: pointer.String(b.backup.Spec.Backend.Local.StorageClass),
-			},
-		}
-		err = ctrl.SetControllerReference(b.backup, destPVC, b.Scheme)
-		if err != nil {
-			return nil, err
-		}
-		err = b.CreateObjectIfNotExisting(destPVC)
+		destPVC, err := b.createLocalPVC(b.CTX)
 		if err != nil {
 			return nil, err
 		}
@@ -179,7 +169,7 @@ func (b *CITABackupExecutor) prepareVolumes() ([]corev1.Volume, error) {
 				},
 			}})
 	}
-	if b.backup.Spec.DataType.State != nil {
+	if b.backup.Spec.DataType.State != nil && b.backup.Spec.DeployMethod == citav1.CloudConfig {
 		volumes = append(volumes, corev1.Volume{
 			Name: "cita-config",
 			VolumeSource: corev1.VolumeSource{
@@ -195,26 +185,47 @@ func (b *CITABackupExecutor) prepareVolumes() ([]corev1.Volume, error) {
 }
 
 func (b *CITABackupExecutor) newVolumeMountsForFull() []corev1.VolumeMount {
+	if b.backup.Spec.DeployMethod == citav1.CloudConfig {
+		return []corev1.VolumeMount{
+			{
+				Name:      "backup-source",
+				MountPath: "/data/backup-source",
+				ReadOnly:  true,
+			},
+		}
+	}
+	// python chain node
 	return []corev1.VolumeMount{
 		{
 			Name:      "backup-source",
 			MountPath: "/data/backup-source",
 			ReadOnly:  true,
+			SubPath:   b.backup.Spec.Node,
 		},
 	}
 }
 
 func (b *CITABackupExecutor) newVolumeMountsForState() []corev1.VolumeMount {
+	if b.backup.Spec.DeployMethod == citav1.CloudConfig {
+		return []corev1.VolumeMount{
+			{
+				Name:      "backup-source",
+				MountPath: "/data/backup-source",
+				ReadOnly:  false,
+			},
+			{
+				Name:      "cita-config",
+				MountPath: "/cita-config",
+				ReadOnly:  true,
+			},
+		}
+	}
 	return []corev1.VolumeMount{
 		{
 			Name:      "backup-source",
 			MountPath: "/data/backup-source",
+			SubPath:   b.backup.Spec.Node,
 			ReadOnly:  false,
-		},
-		{
-			Name:      "cita-config",
-			MountPath: "/cita-config",
-			ReadOnly:  true,
 		},
 	}
 }
@@ -224,7 +235,7 @@ func (b *CITABackupExecutor) args() ([]string, error) {
 	if len(b.backup.Spec.Tags) > 0 {
 		args = append(args, BuildTagArgs(b.backup.Spec.Tags)...)
 	}
-	crypto, consensus, err := b.GetCryptoAndConsensus(b.backup.Namespace, b.backup.Spec.Node)
+	crypto, consensus, err := b.node.GetCryptoAndConsensus(b.CTX)
 	if err != nil {
 		return nil, err
 	}
@@ -235,10 +246,10 @@ func (b *CITABackupExecutor) args() ([]string, error) {
 	case b.backup.Spec.DataType.State != nil:
 		args = append(args, "-dataType", "state")
 		args = append(args, "-blockHeight", strconv.FormatInt(b.backup.Spec.DataType.State.BlockHeight, 10))
-		// todo:
 		args = append(args, "-crypto", crypto)
 		args = append(args, "-consensus", consensus)
 		args = append(args, "-backupDir", "/state_data")
+		args = append(args, "-nodeDeployMethod", string(b.backup.Spec.DeployMethod))
 	default:
 		return nil, fmt.Errorf("undefined backup data type on '%v/%v'", b.backup.Namespace, b.backup.Name)
 	}
@@ -343,4 +354,43 @@ func (b *CITABackupExecutor) setupEnvVars() []corev1.EnvVar {
 	}
 
 	return vars.Convert()
+}
+
+func (b *CITABackupExecutor) createLocalPVC(ctx context.Context) (*corev1.PersistentVolumeClaim, error) {
+	var err error
+	var resourceRequirements corev1.ResourceRequirements
+	if b.backup.Spec.Backend.Local.Size != "" {
+		// Create pvc of specified size
+		resourceRequirements = corev1.ResourceRequirements{
+			Limits:   nil,
+			Requests: corev1.ResourceList{corev1.ResourceStorage: resource.MustParse(b.backup.Spec.Backend.Local.Size)},
+		}
+	} else {
+		// Create a pvc of the same size as the original
+		resourceRequirements, err = b.node.GetPVCInfo(ctx)
+		if err != nil {
+			return nil, nil
+		}
+	}
+
+	destPVC := &corev1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      b.backup.Name,
+			Namespace: b.backup.Namespace,
+		},
+		Spec: corev1.PersistentVolumeClaimSpec{
+			AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+			Resources:        resourceRequirements,
+			StorageClassName: pointer.String(b.backup.Spec.Backend.Local.StorageClass),
+		},
+	}
+	err = ctrl.SetControllerReference(b.backup, destPVC, b.Scheme)
+	if err != nil {
+		return nil, err
+	}
+	err = b.CreateObjectIfNotExisting(destPVC)
+	if err != nil {
+		return nil, err
+	}
+	return destPVC, nil
 }

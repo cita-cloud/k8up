@@ -231,6 +231,8 @@ spec:
                     properties:
                       mountPath:
                         type: string
+                      size:
+                        type: string
                       storageClass:
                         type: string
                     type: object
@@ -355,6 +357,9 @@ spec:
                 type: string
               chain:
                 description: Chain
+                type: string
+              deployMethod:
+                description: DeployMethod
                 type: string
               failedJobsHistoryLimit:
                 description: FailedJobsHistoryLimit amount of failed jobs to keep

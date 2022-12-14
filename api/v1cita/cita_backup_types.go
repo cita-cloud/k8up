@@ -18,6 +18,8 @@ type BackupSpec struct {
 	Chain string `json:"chain,omitempty"`
 	// Node
 	Node string `json:"node,omitempty"`
+	// DeployMethod
+	DeployMethod DeployMethod `json:"deployMethod,omitempty"`
 	// DataType
 	DataType *DataType `json:"dataType,omitempty"`
 }

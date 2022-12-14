@@ -231,6 +231,8 @@ spec:
                         properties:
                           mountPath:
                             type: string
+                          size:
+                            type: string
                           storageClass:
                             type: string
                         type: object
@@ -825,6 +827,8 @@ spec:
                     properties:
                       mountPath:
                         type: string
+                      size:
+                        type: string
                       storageClass:
                         type: string
                     type: object
@@ -1139,6 +1143,8 @@ spec:
                       local:
                         properties:
                           mountPath:
+                            type: string
+                          size:
                             type: string
                           storageClass:
                             type: string
@@ -1692,6 +1698,8 @@ spec:
                       local:
                         properties:
                           mountPath:
+                            type: string
+                          size:
                             type: string
                           storageClass:
                             type: string
@@ -2408,6 +2416,8 @@ spec:
                         properties:
                           mountPath:
                             type: string
+                          size:
+                            type: string
                           storageClass:
                             type: string
                         type: object
@@ -3006,6 +3016,8 @@ spec:
                       local:
                         properties:
                           mountPath:
+                            type: string
+                          size:
                             type: string
                           storageClass:
                             type: string

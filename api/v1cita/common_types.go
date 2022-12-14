@@ -37,3 +37,10 @@ type K8upCommon struct {
 	// Tags is a list of arbitrary tags that get added to the backup via Restic's tagging system
 	Tags []string `json:"tags,omitempty"`
 }
+
+type DeployMethod string
+
+const (
+	PythonOperator DeployMethod = "python"
+	CloudConfig    DeployMethod = "cloud-config"
+)

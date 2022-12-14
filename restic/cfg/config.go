@@ -16,8 +16,10 @@ const (
 )
 
 const (
-	FullDataType  = "full"
-	StateDataType = "state"
+	FullDataType        = "full"
+	StateDataType       = "state"
+	DeployByPython      = "python"
+	DeployByCloudConfig = "cloud-config"
 )
 
 var (
@@ -37,11 +39,12 @@ type Configuration struct {
 	BackupFileExtensionAnnotation string
 	BackupDir                     string
 	// CITA Option Start
-	DataType      string
-	BlockHeight   int64
-	CITACrypto    string
-	CITAConsensus string
-	Paths         []string
+	NodeDeployMethod string
+	DataType         string
+	BlockHeight      int64
+	CITACrypto       string
+	CITAConsensus    string
+	Paths            []string
 	// CITA Option End
 
 	PromURL    string

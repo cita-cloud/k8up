@@ -54,6 +54,7 @@ var (
 
 			&cli.StringFlag{Destination: &cfg.Config.BackupDir, Name: "backupDir", EnvVars: []string{backupDirEnvKey}, Value: "/data", Usage: "Set from which directory the backup should be performed."},
 
+			&cli.StringFlag{Destination: &cfg.Config.NodeDeployMethod, Name: "nodeDeployMethod", Usage: "Method of node deploy, 'python' or 'cloud-config', customized for CITA"},
 			&cli.StringFlag{Destination: &cfg.Config.DataType, Name: "dataType", Usage: "Type of data, 'full' or 'state', customized for CITA"},
 			&cli.Int64Flag{Destination: &cfg.Config.BlockHeight, Name: "blockHeight", Usage: "The block height you want to state-backup or state-recover, customized for CITA"},
 			&cli.StringFlag{Destination: &cfg.Config.CITACrypto, Name: "crypto", Usage: "Type of node crypto, 'sm' or 'eth', customized for CITA"},
@@ -156,12 +157,21 @@ func run(ctx context.Context, resticCLI *resticCli.Restic, mainLogger logr.Logge
 		if err != nil {
 			return err
 		}
-		err = resticCLI.DoCITAStateBackup(cfg.Config.BlockHeight,
-			"/data/backup-source",
-			"/cita-config",
-			backupPath,
-			cfg.Config.CITACrypto,
-			cfg.Config.CITAConsensus)
+		if cfg.Config.NodeDeployMethod == cfg.DeployByCloudConfig {
+			err = resticCLI.DoCITAStateBackup(cfg.Config.BlockHeight,
+				"/data/backup-source",
+				"/cita-config",
+				backupPath,
+				cfg.Config.CITACrypto,
+				cfg.Config.CITAConsensus)
+		} else if cfg.Config.NodeDeployMethod == cfg.DeployByPython {
+			err = resticCLI.DoCITAStateBackup(cfg.Config.BlockHeight,
+				"/data/backup-source",
+				"/data/backup-source",
+				backupPath,
+				cfg.Config.CITACrypto,
+				cfg.Config.CITAConsensus)
+		}
 		if err != nil {
 			return err
 		}
