@@ -31,6 +31,11 @@ func (b *BlockHeightFallbackExecutor) GetConcurrencyLimit() int {
 	return cfg.Config.GlobalConcurrentRestoreJobsLimit
 }
 
+// Exclusive should return true for jobs that can't run while other jobs run.
+func (*BlockHeightFallbackExecutor) Exclusive() bool {
+	return true
+}
+
 // Execute triggers the actual batch.job creation on the cluster.
 // It will also register a callback function on the observer so the PreBackupPods can be removed after the backup has finished.
 func (b *BlockHeightFallbackExecutor) Execute() error {

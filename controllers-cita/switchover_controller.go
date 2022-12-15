@@ -12,7 +12,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/k8up-io/k8up/v2/api/v1cita"
-	"github.com/k8up-io/k8up/v2/operator/cfg"
 	"github.com/k8up-io/k8up/v2/operator/handler"
 	"github.com/k8up-io/k8up/v2/operator/job"
 )
@@ -44,11 +43,11 @@ func (r *SwitchoverReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, nil
 	}
 
-	repository := cfg.Config.GetGlobalRepository()
-	if switchover.Spec.Backend != nil {
-		repository = switchover.Spec.Backend.String()
-	}
-	config := job.NewConfig(ctx, r.Client, log, switchover, r.Scheme, repository)
+	//repository := cfg.Config.GetGlobalRepository()
+	//if switchover.Spec.Backend != nil {
+	//	repository = switchover.Spec.Backend.String()
+	//}
+	config := job.NewConfig(ctx, r.Client, log, switchover, r.Scheme, switchover.Spec.DestNode)
 
 	backupHandler := handler.NewHandler(config)
 	return ctrl.Result{RequeueAfter: time.Second * 10}, backupHandler.Handle()

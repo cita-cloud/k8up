@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/go-logr/logr"
 	citav1 "github.com/k8up-io/k8up/v2/api/v1cita"
-	"github.com/k8up-io/k8up/v2/operator/cfg"
 	"github.com/k8up-io/k8up/v2/operator/handler"
 	"github.com/k8up-io/k8up/v2/operator/job"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -42,11 +41,11 @@ func (r *RestoreReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, nil
 	}
 
-	repository := cfg.Config.GetGlobalRepository()
-	if restore.Spec.Backend != nil {
-		repository = restore.Spec.Backend.String()
-	}
-	config := job.NewConfig(ctx, r.Client, log, restore, r.Scheme, repository)
+	//repository := cfg.Config.GetGlobalRepository()
+	//if restore.Spec.Backend != nil {
+	//	repository = restore.Spec.Backend.String()
+	//}
+	config := job.NewConfig(ctx, r.Client, log, restore, r.Scheme, restore.Spec.Node)
 
 	restoreHandler := handler.NewHandler(config)
 	return ctrl.Result{RequeueAfter: time.Second * 30}, restoreHandler.Handle()
