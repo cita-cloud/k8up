@@ -35,6 +35,11 @@ func (r *CITARestoreExecutor) GetConcurrencyLimit() int {
 	return cfg.Config.GlobalConcurrentRestoreJobsLimit
 }
 
+// Exclusive should return true for jobs that can't run while other jobs run.
+func (*CITARestoreExecutor) Exclusive() bool {
+	return true
+}
+
 // Execute creates the actual batch.job on the k8s api.
 func (r *CITARestoreExecutor) Execute() error {
 	restore, ok := r.Obj.(*citav1.Restore)

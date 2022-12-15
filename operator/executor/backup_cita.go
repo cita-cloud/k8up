@@ -42,6 +42,11 @@ func (b *CITABackupExecutor) GetConcurrencyLimit() int {
 	return cfg.Config.GlobalConcurrentBackupJobsLimit
 }
 
+// Exclusive should return true for jobs that can't run while other jobs run.
+func (*CITABackupExecutor) Exclusive() bool {
+	return true
+}
+
 // Execute triggers the actual batch.job creation on the cluster.
 // It will also register a callback function on the observer so the PreBackupPods can be removed after the backup has finished.
 func (b *CITABackupExecutor) Execute() error {
