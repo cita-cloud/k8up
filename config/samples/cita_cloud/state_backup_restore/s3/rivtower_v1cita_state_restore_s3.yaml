@@ -6,7 +6,7 @@ metadata:
 spec:
   chain: test-chain-zenoh-overlord
   node: test-chain-zenoh-overlord-node0
-  deployMethod: cita-cloud
+  deployMethod: cloud-config
   backup: state-backup-to-s3
 #  podSecurityContext:
 #    runAsGroup: 1000
