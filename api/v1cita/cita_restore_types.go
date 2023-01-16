@@ -13,14 +13,20 @@ import (
 type RestoreSpec struct {
 	// inherit k8upv1.RestoreSpec
 	k8upv1.RestoreSpec `json:",inline"`
-	// Chain
-	Chain string `json:"chain,omitempty"`
-	// Node
-	Node string `json:"node,omitempty"`
-	// DeployMethod
-	DeployMethod DeployMethod `json:"deployMethod,omitempty"`
+	// CITACommon
+	NodeInfo `json:",inline"`
 	// Backup
 	Backup string `json:"backup,omitempty"`
+}
+
+func (r *RestoreSpec) CreateObject(name, namespace string) runtime.Object {
+	return &Restore{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: *r,
+	}
 }
 
 // +kubebuilder:object:root=true
@@ -118,4 +124,28 @@ func (r *RestoreList) GetJobObjects() k8upv1.JobObjectList {
 		items[i] = &r.Items[i]
 	}
 	return items
+}
+
+// GetDeepCopy returns a deep copy
+func (in *CITARestoreSchedule) GetDeepCopy() ScheduleSpecInterface {
+	return in.DeepCopy()
+}
+
+// GetRunnableSpec returns a pointer to RunnableSpec
+func (in *CITARestoreSchedule) GetRunnableSpec() *k8upv1.RunnableSpec {
+	return &in.RunnableSpec
+}
+
+// GetSchedule returns the schedule definition
+func (in *CITARestoreSchedule) GetSchedule() k8upv1.ScheduleDefinition {
+	return in.Schedule
+}
+
+// GetObjectCreator returns the ObjectCreator instance
+func (in *CITARestoreSchedule) GetObjectCreator() k8upv1.ObjectCreator {
+	return in
+}
+
+func (in *CITARestoreSchedule) GetNodeInfo() *NodeInfo {
+	return &in.NodeInfo
 }

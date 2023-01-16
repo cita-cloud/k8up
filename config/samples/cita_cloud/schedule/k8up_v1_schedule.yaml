@@ -1,19 +1,20 @@
+---
 apiVersion: rivtower.com/v1cita
-kind: Backup
+kind: Schedule
 metadata:
-  name: full-backup-to-s3-2
+  name: schedule-test
   namespace: zhujq
 spec:
+  chain: test-chain-zenoh-overlord
   node: test-chain-zenoh-overlord-node0
   deployMethod: cloud-config
-  chain: test-chain-zenoh-overlord
-  dataType:
-    full:
-      includePaths:
-        - "data"
-        - "chain_data"
-  failedJobsHistoryLimit: 2
-  successfulJobsHistoryLimit: 2
+  resourceRequirementsTemplate:
+    requests:
+      memory: "64Mi"
+      cpu: "250m"
+    limits:
+      memory: "128Mi"
+      cpu: "500m"
   backend:
     repoPasswordSecretRef:
       name: backup-repo
@@ -27,3 +28,12 @@ spec:
       secretAccessKeySecretRef:
         name: minio-credentials
         key: password
+  citaBackup:
+    schedule: '52 14 * * *'
+    dataType:
+      full:
+        includePaths:
+          - "data"
+          - "chain_data"
+    failedJobsHistoryLimit: 2
+    successfulJobsHistoryLimit: 2

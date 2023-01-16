@@ -14,12 +14,8 @@ import (
 type BackupSpec struct {
 	// inherit k8upv1.BackupSpec
 	k8upv1.BackupSpec `json:",inline"`
-	// Chain
-	Chain string `json:"chain,omitempty"`
-	// Node
-	Node string `json:"node,omitempty"`
-	// DeployMethod
-	DeployMethod DeployMethod `json:"deployMethod,omitempty"`
+	// CITACommon
+	NodeInfo `json:",inline"`
 	// DataType
 	DataType *DataType `json:"dataType,omitempty"`
 }
@@ -133,4 +129,38 @@ func (b *BackupList) GetJobObjects() k8upv1.JobObjectList {
 		items[i] = &b.Items[i]
 	}
 	return items
+}
+
+// GetDeepCopy returns a deep copy
+func (in *CITABackupSchedule) GetDeepCopy() ScheduleSpecInterface {
+	return in.DeepCopy()
+}
+
+// GetRunnableSpec returns a pointer to RunnableSpec
+func (in *CITABackupSchedule) GetRunnableSpec() *k8upv1.RunnableSpec {
+	return &in.RunnableSpec
+}
+
+// GetSchedule returns the schedule definition
+func (in *CITABackupSchedule) GetSchedule() k8upv1.ScheduleDefinition {
+	return in.Schedule
+}
+
+// GetObjectCreator returns the ObjectCreator instance
+func (in *CITABackupSchedule) GetObjectCreator() k8upv1.ObjectCreator {
+	return in
+}
+
+func (in *CITABackupSchedule) GetNodeInfo() *NodeInfo {
+	return &in.NodeInfo
+}
+
+func (b *BackupSpec) CreateObject(name, namespace string) runtime.Object {
+	return &Backup{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: *b,
+	}
 }
