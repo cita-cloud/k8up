@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	k8upv1 "github.com/k8up-io/k8up/v2/api/v1"
+	citav1 "github.com/k8up-io/k8up/v2/api/v1cita"
 )
 
 const (
@@ -19,6 +20,10 @@ const (
 )
 
 func createSeed(schedule *k8upv1.Schedule, jobType k8upv1.JobType) string {
+	return schedule.Namespace + "/" + schedule.Name + "@" + jobType.String()
+}
+
+func createSeedForCITA(schedule *citav1.Schedule, jobType k8upv1.JobType) string {
 	return schedule.Namespace + "/" + schedule.Name + "@" + jobType.String()
 }
 

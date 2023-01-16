@@ -12,13 +12,8 @@ type BlockHeightFallbackSpec struct {
 	k8upv1.RunnableSpec `json:",inline"`
 
 	K8upCommon `json:",inline"`
-
-	// Chain
-	Chain string `json:"chain,omitempty"`
-	// Node
-	Node string `json:"node,omitempty"`
-	// DeployMethod
-	DeployMethod DeployMethod `json:"deployMethod,omitempty"`
+	// CITACommon
+	NodeInfo `json:",inline"`
 	// BlockHeight
 	BlockHeight int64 `json:"blockHeight"`
 }
