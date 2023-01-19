@@ -40,6 +40,10 @@ BATS_FILES ?= .
 K8UP_GHCR_IMG ?= ghcr.io/k8up-io/k8up:$(IMG_TAG)
 K8UP_QUAY_IMG ?= quay.io/k8up-io/k8up:$(IMG_TAG)
 
+CITA_REGISTRY ?= docker.io
+CITA_NODE_IMG ?= $(CITA_REGISTRY)/cita-cloud/cita-node:$(IMG_TAG)
+CLOUD_OP_LATEST_TAG ?= $(shell curl -sS "https://api.github.com/repos/cita-cloud/cloud-op/tags" | jq -r '.[0].name')
+
 # Operator Integration Test
 ENVTEST_ADDITIONAL_FLAGS ?= --bin-dir "$(go_bin)"
 INTEGRATION_TEST_DEBUG_OUTPUT ?= false
