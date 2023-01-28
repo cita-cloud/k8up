@@ -6,15 +6,18 @@ package executor
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/imdario/mergo"
+	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	k8upv1 "github.com/k8up-io/k8up/v2/api/v1"
+	citav1 "github.com/k8up-io/k8up/v2/api/v1cita"
 	"github.com/k8up-io/k8up/v2/operator/cfg"
 	"github.com/k8up-io/k8up/v2/operator/executor/cleaner"
 	"github.com/k8up-io/k8up/v2/operator/job"
@@ -205,6 +208,14 @@ func NewExecutor(config job.Config) queue.Executor {
 		return NewPruneExecutor(config)
 	case k8upv1.RestoreType:
 		return NewRestoreExecutor(config)
+	case citav1.CITABackupType:
+		return NewCITABackupExecutor(config)
+	case citav1.CITARestoreType:
+		return NewCITARestoreExecutor(config)
+	case citav1.FallbackType:
+		return NewBlockHeightFallbackExecutor(config)
+	case citav1.SwitchoverType:
+		return NewSwitchoverExecutor(config)
 	}
 	return nil
 }
@@ -234,4 +245,48 @@ func BuildTagArgs(tagList []string) []string {
 		args = append(args, "--tag", tagList[i])
 	}
 	return args
+}
+
+func BuildIncludePathArgs(includePathList []string) []string {
+	var args []string
+	for i := range includePathList {
+		args = append(args, "--path", includePathList[i])
+	}
+	return args
+}
+
+func (g *generic) getObject(namespace, name string, object client.Object) error {
+	err := g.Client.Get(g.CTX, types.NamespacedName{Namespace: namespace, Name: name}, object)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *generic) GetCryptoAndConsensus(namespace, name string) (string, string, error) {
+	sts := &appv1.StatefulSet{}
+	err := g.Client.Get(g.CTX, types.NamespacedName{Namespace: namespace, Name: name}, sts)
+	if err != nil {
+		return "", "", err
+	}
+
+	var crypto, consensus string
+	for _, container := range sts.Spec.Template.Spec.Containers {
+		if container.Name == "crypto" || container.Name == "kms" {
+			if strings.Contains(container.Image, "sm") {
+				crypto = "sm"
+			} else if strings.Contains(container.Image, "eth") {
+				crypto = "eth"
+			}
+		} else if container.Name == "consensus" {
+			if strings.Contains(container.Image, "bft") {
+				consensus = "bft"
+			} else if strings.Contains(container.Image, "raft") {
+				consensus = "raft"
+			} else if strings.Contains(container.Image, "overlord") {
+				consensus = "overlord"
+			}
+		}
+	}
+	return crypto, consensus, nil
 }

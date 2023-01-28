@@ -1,0 +1,23 @@
+apiVersion: rivtower.com/v1cita
+kind: Backup
+metadata:
+  name: full-backup-to-local
+  namespace: zhujq
+spec:
+  node: test-chain-zenoh-overlord-node0
+  deployMethod: cloud-config
+  chain: test-chain-zenoh-overlord
+  dataType:
+    full:
+      includePaths:
+        - "data"
+        - "chain_data"
+  failedJobsHistoryLimit: 2
+  successfulJobsHistoryLimit: 2
+  backend:
+    repoPasswordSecretRef:
+      name: backup-repo
+      key: password
+    local:
+      mountPath: "/hello"
+      storageClass: "nas-client-provisioner"
