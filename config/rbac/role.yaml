@@ -18,6 +18,18 @@ rules:
   - update
   - watch
 - apiGroups:
+  - apps
+  resources:
+  - statefulsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - batch
   resources:
   - jobs
@@ -59,8 +71,12 @@ rules:
   resources:
   - persistentvolumeclaims
   verbs:
+  - create
+  - delete
   - get
   - list
+  - patch
+  - update
   - watch
 - apiGroups:
   - ""
@@ -83,6 +99,7 @@ rules:
   - delete
   - get
   - list
+  - watch
 - apiGroups:
   - k8up.io
   resources:
@@ -258,6 +275,7 @@ rules:
   - delete
   - get
   - list
+  - watch
 - apiGroups:
   - rivtower.com
   resources:
