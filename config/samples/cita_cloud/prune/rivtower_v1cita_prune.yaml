@@ -1,19 +1,14 @@
 apiVersion: rivtower.com/v1cita
-kind: Backup
+kind: Prune
 metadata:
-  name: full-backup-to-s3-2
+  name: prune-test-1
   namespace: zhujq
 spec:
   node: test-chain-zenoh-overlord-node0
-  deployMethod: cloud-config
   chain: test-chain-zenoh-overlord
-  dataType:
-    full:
-      includePaths:
-        - "data"
-        - "chain_data"
-  failedJobsHistoryLimit: 2
-  successfulJobsHistoryLimit: 2
+  retention:
+    keepLast: 1
+    keepDaily: 14
   backend:
     repoPasswordSecretRef:
       name: backup-repo

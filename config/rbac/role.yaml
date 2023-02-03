@@ -18,6 +18,18 @@ rules:
   - update
   - watch
 - apiGroups:
+  - apps
+  resources:
+  - statefulsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - batch
   resources:
   - jobs
@@ -59,8 +71,12 @@ rules:
   resources:
   - persistentvolumeclaims
   verbs:
+  - create
+  - delete
   - get
   - list
+  - patch
+  - update
   - watch
 - apiGroups:
   - ""
@@ -83,6 +99,7 @@ rules:
   - delete
   - get
   - list
+  - watch
 - apiGroups:
   - k8up.io
   resources:
@@ -258,6 +275,7 @@ rules:
   - delete
   - get
   - list
+  - watch
 - apiGroups:
   - rivtower.com
   resources:
@@ -302,6 +320,27 @@ rules:
 - apiGroups:
   - rivtower.com
   resources:
+  - prunes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rivtower.com
+  resources:
+  - prunes/finalizers
+  - prunes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rivtower.com
+  resources:
   - restores
   verbs:
   - create
@@ -316,6 +355,27 @@ rules:
   resources:
   - restores/finalizers
   - restores/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rivtower.com
+  resources:
+  - schedules
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rivtower.com
+  resources:
+  - schedules/finalizers
+  - schedules/status
   verbs:
   - get
   - patch

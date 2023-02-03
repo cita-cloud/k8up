@@ -216,6 +216,8 @@ func NewExecutor(config job.Config) queue.Executor {
 		return NewBlockHeightFallbackExecutor(config)
 	case citav1.SwitchoverType:
 		return NewSwitchoverExecutor(config)
+	case citav1.CITAPruneType:
+		return NewCITAPruneExecutor(config)
 	}
 	return nil
 }

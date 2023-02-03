@@ -125,6 +125,8 @@ func operatorMain(c *cli.Context) error {
 		"Job":                 &controllers.JobReconciler{},
 		"CITABackup":          &controllerscita.BackupReconciler{},
 		"CITARestore":         &controllerscita.RestoreReconciler{},
+		"CITAPrune":           &controllerscita.PruneReconciler{},
+		"CITASchedule":        &controllerscita.ScheduleReconciler{},
 		"BlockHeightFallback": &controllerscita.BlockHeightFallbackReconciler{},
 		"Switchover":          &controllerscita.SwitchoverReconciler{},
 	} {
