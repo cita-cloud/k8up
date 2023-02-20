@@ -231,6 +231,10 @@ spec:
                         properties:
                           mountPath:
                             type: string
+                          pvc:
+                            description: if Pvc set, we will ignore StorageClass and
+                              Size fileds, that mean
+                            type: string
                           size:
                             type: string
                           storageClass:
@@ -827,6 +831,10 @@ spec:
                     properties:
                       mountPath:
                         type: string
+                      pvc:
+                        description: if Pvc set, we will ignore StorageClass and Size
+                          fileds, that mean
+                        type: string
                       size:
                         type: string
                       storageClass:
@@ -1143,6 +1151,10 @@ spec:
                       local:
                         properties:
                           mountPath:
+                            type: string
+                          pvc:
+                            description: if Pvc set, we will ignore StorageClass and
+                              Size fileds, that mean
                             type: string
                           size:
                             type: string
@@ -1698,6 +1710,10 @@ spec:
                       local:
                         properties:
                           mountPath:
+                            type: string
+                          pvc:
+                            description: if Pvc set, we will ignore StorageClass and
+                              Size fileds, that mean
                             type: string
                           size:
                             type: string
@@ -2416,6 +2432,10 @@ spec:
                         properties:
                           mountPath:
                             type: string
+                          pvc:
+                            description: if Pvc set, we will ignore StorageClass and
+                              Size fileds, that mean
+                            type: string
                           size:
                             type: string
                           storageClass:
@@ -3016,6 +3036,10 @@ spec:
                       local:
                         properties:
                           mountPath:
+                            type: string
+                          pvc:
+                            description: if Pvc set, we will ignore StorageClass and
+                              Size fileds, that mean
                             type: string
                           size:
                             type: string

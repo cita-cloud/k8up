@@ -101,6 +101,8 @@ type LocalSpec struct {
 	MountPath    string `json:"mountPath,omitempty"`
 	StorageClass string `json:"storageClass,omitempty"`
 	Size         string `json:"size,omitempty"`
+	// if Pvc set, we will ignore StorageClass and Size fileds, that mean
+	Pvc string `json:"pvc,omitempty"`
 }
 
 // EnvVars returns the env vars for this backend.

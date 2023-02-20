@@ -160,5 +160,4 @@ func (b *BlockHeightFallbackExecutor) startCITANode() {
 		return
 	}
 	// todo event
-	return
 }

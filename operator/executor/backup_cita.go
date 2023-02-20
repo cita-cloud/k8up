@@ -4,8 +4,10 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"strconv"
+	"strings"
+
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -114,12 +116,26 @@ func (b *CITABackupExecutor) startBackup(backupJob *batchv1.Job) error {
 		backupJob.Spec.Template.Spec.Containers[0].VolumeMounts = b.newVolumeMountsForState()
 	}
 	if b.backup.Spec.Backend.Local != nil {
-		// mount new pvc
-		backupJob.Spec.Template.Spec.Containers[0].VolumeMounts = append(backupJob.Spec.Template.Spec.Containers[0].VolumeMounts, corev1.VolumeMount{
-			Name:      "backup-dest",
-			ReadOnly:  false,
-			MountPath: b.backup.Spec.Backend.Local.MountPath,
-		})
+		if b.backup.Spec.Backend.Local.StorageClass != "" {
+			// mount new pvc
+			backupJob.Spec.Template.Spec.Containers[0].VolumeMounts = append(backupJob.Spec.Template.Spec.Containers[0].VolumeMounts, corev1.VolumeMount{
+				Name:      "backup-dest",
+				ReadOnly:  false,
+				MountPath: b.backup.Spec.Backend.Local.MountPath,
+			})
+		}
+		if b.backup.Spec.Backend.Local.Pvc != "" {
+			// mount the pvc provided by the user
+			mountPath, err := GetMountPoint(b.backup.Spec.Backend.Local.MountPath)
+			if err != nil {
+				return nil
+			}
+			backupJob.Spec.Template.Spec.Containers[0].VolumeMounts = append(backupJob.Spec.Template.Spec.Containers[0].VolumeMounts, corev1.VolumeMount{
+				Name:      "backup-dest",
+				ReadOnly:  false,
+				MountPath: mountPath,
+			})
+		}
 	}
 
 	args, err := b.args()
@@ -149,7 +165,6 @@ func (b *CITABackupExecutor) startCITANode() {
 		return
 	}
 	// todo event
-	return
 }
 
 func (b *CITABackupExecutor) prepareVolumes() ([]corev1.Volume, error) {
@@ -160,19 +175,32 @@ func (b *CITABackupExecutor) prepareVolumes() ([]corev1.Volume, error) {
 	}
 	volumes = append(volumes, sourceVolume)
 	if b.backup.Spec.Backend.Local != nil {
-		destPVC, err := b.createLocalPVC(b.CTX)
-		if err != nil {
-			return nil, err
-		}
-		// add to volumes
-		volumes = append(volumes, corev1.Volume{
-			Name: "backup-dest",
-			VolumeSource: corev1.VolumeSource{
-				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-					ClaimName: destPVC.Name,
-					ReadOnly:  false,
+		if b.backup.Spec.Backend.Local.StorageClass != "" && b.backup.Spec.Backend.Local.Size != "" {
+			destPVC, err := b.createLocalPVC(b.CTX)
+			if err != nil {
+				return nil, err
+			}
+			// add to volumes
+			volumes = append(volumes, corev1.Volume{
+				Name: "backup-dest",
+				VolumeSource: corev1.VolumeSource{
+					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+						ClaimName: destPVC.Name,
+						ReadOnly:  false,
+					},
+				}})
+		} else if b.backup.Spec.Backend.Local.Pvc != "" {
+			volumes = append(volumes, corev1.Volume{
+				Name: "backup-dest",
+				VolumeSource: corev1.VolumeSource{
+					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+						ClaimName: b.backup.Spec.Backend.Local.Pvc,
+						ReadOnly:  false,
+					},
 				},
-			}})
+			})
+		}
+
 	}
 	if b.backup.Spec.DataType.State != nil && b.backup.Spec.DeployMethod == citav1.CloudConfig {
 		volumes = append(volumes, corev1.Volume{
@@ -398,4 +426,12 @@ func (b *CITABackupExecutor) createLocalPVC(ctx context.Context) (*corev1.Persis
 		return nil, err
 	}
 	return destPVC, nil
+}
+
+func GetMountPoint(path string) (string, error) {
+	res := strings.Split(path, "/")
+	if len(res) < 2 {
+		return "", fmt.Errorf("path invaild")
+	}
+	return fmt.Sprintf("/%s", res[1]), nil
 }
