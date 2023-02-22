@@ -119,7 +119,6 @@ func (r *CITARestoreExecutor) startCITANode() {
 		return
 	}
 	// todo event
-	return
 }
 
 func (r *CITARestoreExecutor) buildRestoreObject(restore *citav1.Restore) (*batchv1.Job, error) {
@@ -200,19 +199,37 @@ func (r *CITARestoreExecutor) volumeConfig(restore *citav1.Restore) ([]corev1.Vo
 
 	if restore.Spec.Backend.Local != nil {
 		// local pvc backup and local pvc restore
-		volumes = append(volumes, corev1.Volume{
-			Name: "restore-source",
-			VolumeSource: corev1.VolumeSource{
-				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-					ClaimName: restore.Spec.Backup,
+		if restore.Spec.Backend.Local.Pvc != "" {
+			// mount the pvc provided by the user
+			mountPath, _ := GetMountPoint(restore.Spec.Backend.Local.MountPath)
+			volumes = append(volumes, corev1.Volume{
+				Name: "restore-source",
+				VolumeSource: corev1.VolumeSource{
+					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+						ClaimName: restore.Spec.Backend.Local.Pvc,
+					},
 				},
-			},
-		})
-		mounts = append(mounts, corev1.VolumeMount{
-			Name:      "restore-source",
-			ReadOnly:  false,
-			MountPath: restore.Spec.Backend.Local.MountPath,
-		})
+			})
+			mounts = append(mounts, corev1.VolumeMount{
+				Name:      "restore-source",
+				ReadOnly:  false,
+				MountPath: mountPath,
+			})
+		} else {
+			volumes = append(volumes, corev1.Volume{
+				Name: "restore-source",
+				VolumeSource: corev1.VolumeSource{
+					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+						ClaimName: restore.Spec.Backup,
+					},
+				},
+			})
+			mounts = append(mounts, corev1.VolumeMount{
+				Name:      "restore-source",
+				ReadOnly:  false,
+				MountPath: restore.Spec.Backend.Local.MountPath,
+			})
+		}
 	}
 
 	if r.backup.Spec.DataType.State != nil {

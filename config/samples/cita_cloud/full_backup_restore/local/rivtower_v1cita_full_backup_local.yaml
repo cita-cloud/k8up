@@ -19,5 +19,8 @@ spec:
       name: backup-repo
       key: password
     local:
-      mountPath: "/hello"
-      storageClass: "nas-client-provisioner"
+      # mountPath: "/hello"
+      # storageClass: "nas-client-provisioner"
+      mountPath: "/new/chain-backup"
+      pvc: local-pvc
+      

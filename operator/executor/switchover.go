@@ -2,6 +2,7 @@ package executor
 
 import (
 	stderrors "errors"
+
 	citav1 "github.com/k8up-io/k8up/v2/api/v1cita"
 	"github.com/k8up-io/k8up/v2/operator/cfg"
 	"github.com/k8up-io/k8up/v2/operator/job"
@@ -146,5 +147,4 @@ func (s *SwitchoverExecutor) startCITANode() {
 		// todo event
 		return
 	}
-	return
 }
