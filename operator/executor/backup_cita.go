@@ -175,7 +175,7 @@ func (b *CITABackupExecutor) prepareVolumes() ([]corev1.Volume, error) {
 	}
 	volumes = append(volumes, sourceVolume)
 	if b.backup.Spec.Backend.Local != nil {
-		if b.backup.Spec.Backend.Local.StorageClass != "" && b.backup.Spec.Backend.Local.Size != "" {
+		if b.backup.Spec.Backend.Local.StorageClass != "" {
 			destPVC, err := b.createLocalPVC(b.CTX)
 			if err != nil {
 				return nil, err
