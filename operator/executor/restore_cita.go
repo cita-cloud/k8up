@@ -60,7 +60,7 @@ func (r *CITARestoreExecutor) Execute() error {
 	r.backup = backup
 
 	// create node object
-	r.node, err = CreateNode(restore.Spec.DeployMethod, restore.Namespace, restore.Spec.Node, r.Client)
+	r.node, err = CreateNode(restore.Spec.DeployMethod, restore.Namespace, restore.Spec.Node, r.Client, r.Log)
 	if err != nil {
 		return err
 	}
