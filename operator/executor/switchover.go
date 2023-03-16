@@ -51,12 +51,12 @@ func (s *SwitchoverExecutor) Execute() error {
 
 	var err error
 	// create source node object
-	s.sourceNode, err = CreateNode(citav1.CloudConfig, switchoverObject.Namespace, switchoverObject.Spec.SourceNode, s.Client)
+	s.sourceNode, err = CreateNode(citav1.CloudConfig, switchoverObject.Namespace, switchoverObject.Spec.SourceNode, s.Client, s.Log)
 	if err != nil {
 		return err
 	}
 	// create dest node object
-	s.destNode, err = CreateNode(citav1.CloudConfig, switchoverObject.Namespace, switchoverObject.Spec.DestNode, s.Client)
+	s.destNode, err = CreateNode(citav1.CloudConfig, switchoverObject.Namespace, switchoverObject.Spec.DestNode, s.Client, s.Log)
 	if err != nil {
 		return err
 	}

@@ -65,7 +65,7 @@ func (b *CITABackupExecutor) Execute() error {
 
 	var err error
 	// create node object
-	b.node, err = CreateNode(backupObject.Spec.DeployMethod, backupObject.Namespace, backupObject.Spec.Node, b.Client)
+	b.node, err = CreateNode(backupObject.Spec.DeployMethod, backupObject.Namespace, backupObject.Spec.Node, b.Client, b.Log)
 	if err != nil {
 		return err
 	}
