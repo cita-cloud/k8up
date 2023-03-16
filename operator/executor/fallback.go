@@ -52,7 +52,7 @@ func (b *BlockHeightFallbackExecutor) Execute() error {
 
 	var err error
 	// create node object
-	b.node, err = CreateNode(bhfObject.Spec.DeployMethod, bhfObject.Namespace, bhfObject.Spec.Node, b.Client)
+	b.node, err = CreateNode(bhfObject.Spec.DeployMethod, bhfObject.Namespace, bhfObject.Spec.Node, b.Client, b.Log)
 	if err != nil {
 		return err
 	}

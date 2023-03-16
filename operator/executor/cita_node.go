@@ -3,6 +3,9 @@ package executor
 import (
 	"context"
 	"fmt"
+	"strings"
+
+	"github.com/go-logr/logr"
 	citav1 "github.com/k8up-io/k8up/v2/api/v1cita"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -10,10 +13,9 @@ import (
 	"k8s.io/client-go/util/retry"
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
 )
 
-type Creator func(namespace, name string, client client.Client) (Node, error)
+type Creator func(namespace, name string, client client.Client, logger logr.Logger) (Node, error)
 
 var nodes = make(map[citav1.DeployMethod]Creator)
 
@@ -21,10 +23,10 @@ func Register(deployMethod citav1.DeployMethod, register Creator) {
 	nodes[deployMethod] = register
 }
 
-func CreateNode(deployMethod citav1.DeployMethod, namespace, name string, client client.Client) (Node, error) {
+func CreateNode(deployMethod citav1.DeployMethod, namespace, name string, client client.Client, logger logr.Logger) (Node, error) {
 	f, ok := nodes[deployMethod]
 	if ok {
-		return f(namespace, name, client)
+		return f(namespace, name, client, logger)
 	}
 	return nil, fmt.Errorf("invalid deploy type: %s", string(deployMethod))
 }
@@ -40,6 +42,7 @@ type Node interface {
 
 type cloudConfigNode struct {
 	client.Client
+	logger    logr.Logger
 	namespace string
 	name      string
 }
@@ -127,8 +130,10 @@ func (c *cloudConfigNode) Start(ctx context.Context) error {
 		return nil
 	})
 	if err != nil {
+		c.logger.Error(err, "start node failed", "name", c.name, "namespace", c.namespace)
 		return err
 	}
+	c.logger.Info("start node success", "name", c.name, "namespace", c.namespace)
 	return nil
 }
 
@@ -147,21 +152,25 @@ func (c *cloudConfigNode) Stop(ctx context.Context) error {
 		return nil
 	})
 	if err != nil {
+		c.logger.Error(err, "stop node failed", "name", c.name, "namespace", c.namespace)
 		return err
 	}
+	c.logger.Info("stop node success", "name", c.name, "namespace", c.namespace)
 	return nil
 }
 
-func newCloudConfigNode(namespace, name string, client client.Client) (Node, error) {
+func newCloudConfigNode(namespace, name string, client client.Client, logger logr.Logger) (Node, error) {
 	return &cloudConfigNode{
 		Client:    client,
 		namespace: namespace,
 		name:      name,
+		logger:    logger,
 	}, nil
 }
 
 type pyNode struct {
 	client.Client
+	logger    logr.Logger
 	namespace string
 	name      string
 }
@@ -272,8 +281,10 @@ func (p *pyNode) Start(ctx context.Context) error {
 		return nil
 	})
 	if err != nil {
+		p.logger.Error(err, "start node failed", "name", p.name, "namespace", p.namespace)
 		return err
 	}
+	p.logger.Info("start node success", "name", p.name, "namespace", p.namespace)
 	return nil
 }
 
@@ -292,16 +303,19 @@ func (p *pyNode) Stop(ctx context.Context) error {
 		return nil
 	})
 	if err != nil {
+		p.logger.Error(err, "stop node failed", "name", p.name, "namespace", p.namespace)
 		return err
 	}
+	p.logger.Info("stop node success", "name", p.name, "namespace", p.namespace)
 	return nil
 }
 
-func newPyNode(namespace, name string, client client.Client) (Node, error) {
+func newPyNode(namespace, name string, client client.Client, logger logr.Logger) (Node, error) {
 	return &pyNode{
 		Client:    client,
 		namespace: namespace,
 		name:      name,
+		logger:    logger,
 	}, nil
 }
 
