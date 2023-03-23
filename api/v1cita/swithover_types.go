@@ -3,7 +3,6 @@ package v1cita
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 
 	k8upv1 "github.com/k8up-io/k8up/v2/api/v1"
 )
@@ -48,21 +47,8 @@ func init() {
 	SchemeBuilder.Register(&Switchover{}, &SwitchoverList{})
 }
 
-func (s *Switchover) GetRuntimeObject() runtime.Object {
-	return s
-}
-
-func (s *Switchover) GetMetaObject() metav1.Object {
-	return s
-}
-
 func (*Switchover) GetType() k8upv1.JobType {
 	return SwitchoverType
-}
-
-// GetJobName returns the name of the underlying batch/v1 job.
-func (s *Switchover) GetJobName() string {
-	return s.GetType().String() + "-" + s.Name
 }
 
 // GetStatus retrieves the Status property
@@ -115,14 +101,4 @@ func (s *SwitchoverList) GetJobObjects() k8upv1.JobObjectList {
 		items[i] = &s.Items[i]
 	}
 	return items
-}
-
-func (s *SwitchoverSpec) CreateObject(name, namespace string) runtime.Object {
-	return &Switchover{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: *s,
-	}
 }

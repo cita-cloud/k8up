@@ -5,6 +5,9 @@ on:
     branches:
     - master
     - master-cita
+  push:
+    branches:
+    - merge-from-v2.6.0
 
 jobs:
   e2e-test:

@@ -3,7 +3,6 @@ package v1cita
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 
 	k8upv1 "github.com/k8up-io/k8up/v2/api/v1"
 )
@@ -44,21 +43,8 @@ func init() {
 	SchemeBuilder.Register(&BlockHeightFallback{}, &BlockHeightFallbackList{})
 }
 
-func (b *BlockHeightFallback) GetRuntimeObject() runtime.Object {
-	return b
-}
-
-func (b *BlockHeightFallback) GetMetaObject() metav1.Object {
-	return b
-}
-
 func (*BlockHeightFallback) GetType() k8upv1.JobType {
 	return FallbackType
-}
-
-// GetJobName returns the name of the underlying batch/v1 job.
-func (b *BlockHeightFallback) GetJobName() string {
-	return b.GetType().String() + "-" + b.Name
 }
 
 // GetStatus retrieves the Status property
@@ -111,14 +97,4 @@ func (b *BlockHeightFallbackList) GetJobObjects() k8upv1.JobObjectList {
 		items[i] = &b.Items[i]
 	}
 	return items
-}
-
-func (b *BlockHeightFallbackSpec) CreateObject(name, namespace string) runtime.Object {
-	return &BlockHeightFallback{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: *b,
-	}
 }

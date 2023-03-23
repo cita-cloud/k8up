@@ -6,10 +6,7 @@ package executor
 
 import (
 	"context"
-	"strings"
-
-	appv1 "k8s.io/api/apps/v1"
-	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/api/errors"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -59,6 +56,23 @@ func (g *Generic) CleanupOldResources(ctx context.Context, typ jobObjectList, na
 
 }
 
+// CreateObjectIfNotExisting tries to create the given object, but ignores AlreadyExistsError.
+// If it fails for any other reason, the Ready condition is set to False with the error message and reason.
+func (g *Generic) CreateObjectIfNotExisting(ctx context.Context, obj client.Object) error {
+	err := g.Client.Create(ctx, obj)
+	if err != nil && !errors.IsAlreadyExists(err) {
+		g.SetConditionFalseWithMessage(
+			ctx,
+			k8upv1.ConditionReady,
+			k8upv1.ReasonCreationFailed,
+			"unable to create %v '%v/%v': %v",
+			obj.GetObjectKind().GroupVersionKind().Kind,
+			obj.GetNamespace(), obj.GetName(), err.Error())
+		return err
+	}
+	return nil
+}
+
 func BuildIncludePathArgs(includePathList []string) []string {
 	var args []string
 	for i := range includePathList {
@@ -67,38 +81,10 @@ func BuildIncludePathArgs(includePathList []string) []string {
 	return args
 }
 
-func (g *Generic) getObject(namespace, name string, object client.Object) error {
-	err := g.Client.Get(g.CTX, types.NamespacedName{Namespace: namespace, Name: name}, object)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (g *Generic) GetCryptoAndConsensus(namespace, name string) (string, string, error) {
-	sts := &appv1.StatefulSet{}
-	err := g.Client.Get(g.CTX, types.NamespacedName{Namespace: namespace, Name: name}, sts)
-	if err != nil {
-		return "", "", err
-	}
-
-	var crypto, consensus string
-	for _, container := range sts.Spec.Template.Spec.Containers {
-		if container.Name == "crypto" || container.Name == "kms" {
-			if strings.Contains(container.Image, "sm") {
-				crypto = "sm"
-			} else if strings.Contains(container.Image, "eth") {
-				crypto = "eth"
-			}
-		} else if container.Name == "consensus" {
-			if strings.Contains(container.Image, "bft") {
-				consensus = "bft"
-			} else if strings.Contains(container.Image, "raft") {
-				consensus = "raft"
-			} else if strings.Contains(container.Image, "overlord") {
-				consensus = "overlord"
-			}
-		}
-	}
-	return crypto, consensus, nil
-}
+//func (g *Generic) getObject(namespace, name string, object client.Object) error {
+//	err := g.Client.Get(g.CTX, types.NamespacedName{Namespace: namespace, Name: name}, object)
+//	if err != nil {
+//		return err
+//	}
+//	return nil
+//}

@@ -1,10 +1,10 @@
 package v1cita
 
 import (
-	k8upv1 "github.com/k8up-io/k8up/v2/api/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+
+	k8upv1 "github.com/k8up-io/k8up/v2/api/v1"
 )
 
 // PruneSpec needs to contain the repository information as well as the desired
@@ -14,16 +14,6 @@ type PruneSpec struct {
 	k8upv1.PruneSpec `json:",inline"`
 	// CITACommon
 	NodeInfo `json:",inline"`
-}
-
-func (p *PruneSpec) CreateObject(name, namespace string) runtime.Object {
-	return &Prune{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: *p,
-	}
 }
 
 // +kubebuilder:object:root=true
@@ -48,19 +38,6 @@ type PruneList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Prune `json:"items"`
-}
-
-func (p *Prune) GetRuntimeObject() runtime.Object {
-	return p
-}
-
-func (p *Prune) GetMetaObject() metav1.Object {
-	return p
-}
-
-// GetJobName returns the name of the underlying batch/v1 job.
-func (p *Prune) GetJobName() string {
-	return p.GetType().String() + "-" + p.Name
 }
 
 func (p *Prune) GetType() k8upv1.JobType {
@@ -132,11 +109,6 @@ func (in *CITAPruneSchedule) GetRunnableSpec() *k8upv1.RunnableSpec {
 // GetSchedule returns the schedule definition
 func (in *CITAPruneSchedule) GetSchedule() k8upv1.ScheduleDefinition {
 	return in.Schedule
-}
-
-// GetObjectCreator returns the ObjectCreator instance
-func (in *CITAPruneSchedule) GetObjectCreator() k8upv1.ObjectCreator {
-	return in
 }
 
 func (in *CITAPruneSchedule) GetNodeInfo() *NodeInfo {

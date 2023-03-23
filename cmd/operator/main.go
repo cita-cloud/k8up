@@ -11,6 +11,10 @@ import (
 	"github.com/k8up-io/k8up/v2/operator/backupcontroller"
 	"github.com/k8up-io/k8up/v2/operator/cfg"
 	"github.com/k8up-io/k8up/v2/operator/checkcontroller"
+	"github.com/k8up-io/k8up/v2/operator/citabackupcontroller"
+	"github.com/k8up-io/k8up/v2/operator/citafallbackcontroller"
+	"github.com/k8up-io/k8up/v2/operator/citarestorecontroller"
+	"github.com/k8up-io/k8up/v2/operator/citaswitchovercontroller"
 	"github.com/k8up-io/k8up/v2/operator/prunecontroller"
 	"github.com/k8up-io/k8up/v2/operator/restorecontroller"
 	"github.com/k8up-io/k8up/v2/operator/schedulecontroller"
@@ -118,6 +122,11 @@ func operatorMain(c *cli.Context) error {
 		"Archive":  archivecontroller.SetupWithManager,
 		"Check":    checkcontroller.SetupWithManager,
 		"Prune":    prunecontroller.SetupWithManager,
+
+		"CITABackup":     citabackupcontroller.SetupWithManager,
+		"CITARestore":    citarestorecontroller.SetupWithManager,
+		"CITAFallback":   citafallbackcontroller.SetupWithManager,
+		"CITASwitchover": citaswitchovercontroller.SetupWithManager,
 	} {
 		if setupErr := setupFn(mgr); setupErr != nil {
 			operatorLog.Error(setupErr, "unable to initialize operator mode", "step", "controller", "controller", name)

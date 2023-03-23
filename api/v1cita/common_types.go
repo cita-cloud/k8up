@@ -10,6 +10,9 @@ const (
 	SwitchoverType   k8upv1.JobType = "switchover"
 	CITAPruneType    k8upv1.JobType = "cita-prune"
 	CITAScheduleType k8upv1.JobType = "cita-schedule"
+
+	ConditionStartChainNodeReady k8upv1.ConditionType = "StartChainNodeReady"
+	ConditionStopChainNodeReady  k8upv1.ConditionType = "StopChainNodeReady"
 )
 
 type NodeInfo struct {
@@ -62,6 +65,5 @@ type ScheduleSpecInterface interface {
 	GetDeepCopy() ScheduleSpecInterface
 	GetRunnableSpec() *k8upv1.RunnableSpec
 	GetSchedule() k8upv1.ScheduleDefinition
-	GetObjectCreator() k8upv1.ObjectCreator
 	GetNodeInfo() *NodeInfo
 }

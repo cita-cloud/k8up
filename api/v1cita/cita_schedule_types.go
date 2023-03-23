@@ -127,8 +127,3 @@ func (s *Schedule) GetSuccessfulJobsHistoryLimit() *int {
 	}
 	return s.Spec.KeepJobs
 }
-
-// IsReferencedBy returns true if the given ref matches the schedule's name and namespace.
-func (s *Schedule) IsReferencedBy(ref k8upv1.ScheduleRef) bool {
-	return ref.Namespace == s.Namespace && ref.Name == s.Name
-}

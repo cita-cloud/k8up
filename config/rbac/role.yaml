@@ -319,27 +319,6 @@ rules:
 - apiGroups:
   - rivtower.com
   resources:
-  - prunes
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - rivtower.com
-  resources:
-  - prunes/finalizers
-  - prunes/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - rivtower.com
-  resources:
   - restores
   verbs:
   - create
@@ -354,27 +333,6 @@ rules:
   resources:
   - restores/finalizers
   - restores/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - rivtower.com
-  resources:
-  - schedules
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - rivtower.com
-  resources:
-  - schedules/finalizers
-  - schedules/status
   verbs:
   - get
   - patch

@@ -3,7 +3,6 @@ package v1cita
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 
 	k8upv1 "github.com/k8up-io/k8up/v2/api/v1"
 )
@@ -62,21 +61,8 @@ func init() {
 	SchemeBuilder.Register(&Backup{}, &BackupList{})
 }
 
-func (b *Backup) GetRuntimeObject() runtime.Object {
-	return b
-}
-
-func (b *Backup) GetMetaObject() metav1.Object {
-	return b
-}
-
 func (*Backup) GetType() k8upv1.JobType {
 	return CITABackupType
-}
-
-// GetJobName returns the name of the underlying batch/v1 job.
-func (b *Backup) GetJobName() string {
-	return b.GetType().String() + "-" + b.Name
 }
 
 // GetStatus retrieves the Status property
@@ -146,21 +132,6 @@ func (in *CITABackupSchedule) GetSchedule() k8upv1.ScheduleDefinition {
 	return in.Schedule
 }
 
-// GetObjectCreator returns the ObjectCreator instance
-func (in *CITABackupSchedule) GetObjectCreator() k8upv1.ObjectCreator {
-	return in
-}
-
 func (in *CITABackupSchedule) GetNodeInfo() *NodeInfo {
 	return &in.NodeInfo
-}
-
-func (b *BackupSpec) CreateObject(name, namespace string) runtime.Object {
-	return &Backup{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: *b,
-	}
 }

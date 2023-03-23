@@ -3,7 +3,6 @@ package v1cita
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 
 	k8upv1 "github.com/k8up-io/k8up/v2/api/v1"
 )
@@ -17,16 +16,6 @@ type RestoreSpec struct {
 	NodeInfo `json:",inline"`
 	// Backup
 	Backup string `json:"backup,omitempty"`
-}
-
-func (r *RestoreSpec) CreateObject(name, namespace string) runtime.Object {
-	return &Restore{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: *r,
-	}
 }
 
 // +kubebuilder:object:root=true
@@ -55,19 +44,6 @@ type RestoreList struct {
 
 func init() {
 	SchemeBuilder.Register(&Restore{}, &RestoreList{})
-}
-
-func (r *Restore) GetRuntimeObject() runtime.Object {
-	return r
-}
-
-func (r *Restore) GetMetaObject() metav1.Object {
-	return r
-}
-
-// GetJobName returns the name of the underlying batch/v1 job.
-func (r *Restore) GetJobName() string {
-	return r.GetType().String() + "-" + r.Name
 }
 
 func (r *Restore) GetType() k8upv1.JobType {
@@ -139,11 +115,6 @@ func (in *CITARestoreSchedule) GetRunnableSpec() *k8upv1.RunnableSpec {
 // GetSchedule returns the schedule definition
 func (in *CITARestoreSchedule) GetSchedule() k8upv1.ScheduleDefinition {
 	return in.Schedule
-}
-
-// GetObjectCreator returns the ObjectCreator instance
-func (in *CITARestoreSchedule) GetObjectCreator() k8upv1.ObjectCreator {
-	return in
 }
 
 func (in *CITARestoreSchedule) GetNodeInfo() *NodeInfo {
