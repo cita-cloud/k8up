@@ -4,8 +4,9 @@ metadata:
   name: fallback-sample
   namespace: zhujq
 spec:
-  blockHeight: 1000
+  blockHeight: 116000
   node: test-chain-zenoh-overlord-node0
+  action: StopAndStart
   deployMethod: cloud-config
   chain: test-chain-zenoh-overlord
 

@@ -6,6 +6,7 @@ metadata:
 spec:
   node: test-chain-zenoh-overlord-node0
   deployMethod: cloud-config
+  action: StopAndStart
   chain: test-chain-zenoh-overlord
   dataType:
     state:

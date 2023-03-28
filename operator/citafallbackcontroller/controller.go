@@ -59,7 +59,7 @@ func (f *FallbackReconciler) Provision(ctx context.Context, obj *citav1.BlockHei
 	if !didRun && err == nil {
 		log.Info("Delaying cita fallback task, another job is running")
 	}
-	return controllerruntime.Result{RequeueAfter: time.Second * 30}, err
+	return controllerruntime.Result{RequeueAfter: time.Second * 15}, err
 }
 
 func (f *FallbackReconciler) Deprovision(_ context.Context, _ *citav1.BlockHeightFallback) (controllerruntime.Result, error) {

@@ -56,7 +56,7 @@ func (f *SwitchoverReconciler) Provision(ctx context.Context, obj *citav1.Switch
 	if !didRun && err == nil {
 		log.Info("Delaying cita switchover task, another job is running")
 	}
-	return controllerruntime.Result{RequeueAfter: time.Second * 30}, err
+	return controllerruntime.Result{RequeueAfter: time.Second * 15}, err
 }
 
 func (f *SwitchoverReconciler) Deprovision(_ context.Context, _ *citav1.Switchover) (controllerruntime.Result, error) {

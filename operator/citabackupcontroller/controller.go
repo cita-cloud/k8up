@@ -62,7 +62,7 @@ func (b *BackupReconciler) Provision(ctx context.Context, obj *citav1.Backup) (c
 		log.Info("Delaying cita backup task, another job is running")
 	}
 
-	return controllerruntime.Result{RequeueAfter: time.Second * 10}, err
+	return controllerruntime.Result{RequeueAfter: time.Second * 15}, err
 }
 
 func (b *BackupReconciler) Deprovision(_ context.Context, _ *citav1.Backup) (controllerruntime.Result, error) {

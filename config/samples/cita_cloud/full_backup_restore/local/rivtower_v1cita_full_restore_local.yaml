@@ -6,6 +6,7 @@ metadata:
 spec:
   chain: test-chain-zenoh-overlord
   deployMethod: cloud-config
+  action: StopAndStart
   node: test-chain-zenoh-overlord-node0
   backup: full-backup-to-local
 #  podSecurityContext:

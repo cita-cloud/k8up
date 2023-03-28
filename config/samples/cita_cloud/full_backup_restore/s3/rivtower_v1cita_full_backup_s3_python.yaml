@@ -6,6 +6,7 @@ metadata:
 spec:
   node: chain-800049219682570240-0
   deployMethod: python
+  action: StopAndStart
   chain: chain-800049219682570240
   dataType:
     full:

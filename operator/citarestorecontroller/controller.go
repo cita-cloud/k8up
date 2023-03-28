@@ -59,7 +59,7 @@ func (r *RestoreReconciler) Provision(ctx context.Context, obj *citav1.Restore) 
 	if !didRun && err == nil {
 		log.Info("Delaying cita restore task, another job is running")
 	}
-	return controllerruntime.Result{RequeueAfter: time.Second * 30}, err
+	return controllerruntime.Result{RequeueAfter: time.Second * 15}, err
 }
 
 func (r *RestoreReconciler) Deprovision(_ context.Context, _ *citav1.Restore) (controllerruntime.Result, error) {
