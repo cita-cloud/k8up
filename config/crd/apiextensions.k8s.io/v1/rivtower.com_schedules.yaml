@@ -35,6 +35,9 @@ spec:
           spec:
             description: ScheduleSpec defines the schedules for the various job types.
             properties:
+              action:
+                description: Action
+                type: string
               archive:
                 description: ArchiveSchedule manages schedules for the archival service
                 properties:
@@ -2069,6 +2072,9 @@ spec:
               citaBackup:
                 description: CITABackupSchedule manages schedules for the backup service
                 properties:
+                  action:
+                    description: Action
+                    type: string
                   activeDeadlineSeconds:
                     description: ActiveDeadlineSeconds specifies the duration in seconds
                       relative to the startTime that the job may be continuously active
@@ -2654,6 +2660,9 @@ spec:
               citaPrune:
                 description: CITAPruneSchedule manages the schedules for the prunes
                 properties:
+                  action:
+                    description: Action
+                    type: string
                   activeDeadlineSeconds:
                     description: ActiveDeadlineSeconds specifies the duration in seconds
                       relative to the startTime that the job may be continuously active
@@ -3242,6 +3251,9 @@ spec:
                 description: CITARestoreSchedule manages schedules for the restore
                   service
                 properties:
+                  action:
+                    description: Action
+                    type: string
                   activeDeadlineSeconds:
                     description: ActiveDeadlineSeconds specifies the duration in seconds
                       relative to the startTime that the job may be continuously active

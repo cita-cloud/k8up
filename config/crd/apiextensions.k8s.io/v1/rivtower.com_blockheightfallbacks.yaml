@@ -37,6 +37,9 @@ spec:
             type: object
           spec:
             properties:
+              action:
+                description: Action
+                type: string
               activeDeadlineSeconds:
                 description: ActiveDeadlineSeconds specifies the duration in seconds
                   relative to the startTime that the job may be continuously active

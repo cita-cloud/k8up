@@ -22,6 +22,8 @@ type NodeInfo struct {
 	Node string `json:"node,omitempty"`
 	// DeployMethod
 	DeployMethod DeployMethod `json:"deployMethod,omitempty"`
+	// Action
+	Action Action `json:"action,omitempty"`
 }
 
 type K8upCommon struct {
@@ -57,6 +59,13 @@ type DeployMethod string
 const (
 	PythonOperator DeployMethod = "python"
 	CloudConfig    DeployMethod = "cloud-config"
+)
+
+type Action string
+
+const (
+	StopAndStart Action = "StopAndStart"
+	Direct       Action = "Direct"
 )
 
 // +k8s:deepcopy-gen=false

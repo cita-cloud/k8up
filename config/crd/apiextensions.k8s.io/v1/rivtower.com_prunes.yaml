@@ -48,6 +48,9 @@ spec:
             description: PruneSpec needs to contain the repository information as
               well as the desired retention policies.
             properties:
+              action:
+                description: Action
+                type: string
               activeDeadlineSeconds:
                 description: ActiveDeadlineSeconds specifies the duration in seconds
                   relative to the startTime that the job may be continuously active

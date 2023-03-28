@@ -65,17 +65,19 @@ func (b *BackupExecutor) Execute(ctx context.Context) error {
 }
 
 func (b *BackupExecutor) startBackup(ctx context.Context) error {
-	// wait stop chain node
-	stopped, err := b.StopChainNode(ctx)
-	if err != nil {
-		return err
-	}
-	if !stopped {
-		return nil
+	if b.backup.Spec.Action == citav1.StopAndStart {
+		// wait stop chain node
+		stopped, err := b.StopChainNode(ctx)
+		if err != nil {
+			return err
+		}
+		if !stopped {
+			return nil
+		}
 	}
 
 	batchJob := b.createJob()
-	_, err = controllerruntime.CreateOrUpdate(ctx, b.Generic.Config.Client, batchJob, func() error {
+	_, err := controllerruntime.CreateOrUpdate(ctx, b.Generic.Config.Client, batchJob, func() error {
 		mutateErr := job.MutateBatchJob(batchJob, b.backup, b.Generic.Config)
 		if mutateErr != nil {
 			return mutateErr

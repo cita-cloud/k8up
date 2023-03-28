@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -17,6 +16,7 @@ import (
 	citav1 "github.com/k8up-io/k8up/v2/api/v1cita"
 	"github.com/k8up-io/k8up/v2/domain"
 	"github.com/k8up-io/k8up/v2/operator/cfg"
+	"github.com/k8up-io/k8up/v2/operator/citabase"
 	"github.com/k8up-io/k8up/v2/operator/executor"
 	"github.com/k8up-io/k8up/v2/operator/job"
 )
@@ -24,10 +24,9 @@ import (
 const restorePath = "/restore"
 
 type RestoreExecutor struct {
-	executor.Generic
+	citabase.CITABase
 	restore *citav1.Restore
 	backup  *citav1.Backup
-	node    domain.Node
 }
 
 // NewRestoreExecutor will return a new executor for Restore jobs.
@@ -50,11 +49,12 @@ func NewRestoreExecutor(ctx context.Context, config job.Config) (*RestoreExecuto
 		return nil, err
 	}
 
+	citaBase := citabase.NewCITABase(config, node)
+
 	return &RestoreExecutor{
-		Generic: executor.Generic{Config: config},
-		node:    node,
-		restore: restore,
-		backup:  backup}, nil
+		CITABase: citaBase,
+		restore:  restore,
+		backup:   backup}, nil
 }
 
 // GetConcurrencyLimit returns the concurrent jobs limit
@@ -66,13 +66,15 @@ func (r *RestoreExecutor) GetConcurrencyLimit() int {
 func (r *RestoreExecutor) Execute(ctx context.Context) error {
 	log := controllerruntime.LoggerFrom(ctx)
 
-	// wait stop chain node
-	stopped, err := r.StopChainNode(ctx)
-	if err != nil {
-		return err
-	}
-	if !stopped {
-		return nil
+	if r.restore.Spec.Action == citav1.StopAndStart {
+		// wait stop chain node
+		stopped, err := r.StopChainNode(ctx)
+		if err != nil {
+			return err
+		}
+		if !stopped {
+			return nil
+		}
 	}
 
 	restoreJob, err := r.createRestoreObject(ctx, r.restore)
@@ -177,7 +179,7 @@ func (r *RestoreExecutor) volumeConfig(restore *citav1.Restore) ([]corev1.Volume
 		// local pvc backup and local pvc restore
 		if restore.Spec.Backend.Local.Pvc != "" {
 			// mount the pvc provided by the user
-			mountPath, _ := GetMountPoint(restore.Spec.Backend.Local.MountPath)
+			mountPath, _ := r.GetMountPoint(restore.Spec.Backend.Local.MountPath)
 			volumes = append(volumes, corev1.Volume{
 				Name: "restore-source",
 				VolumeSource: corev1.VolumeSource{
@@ -244,7 +246,7 @@ func (r *RestoreExecutor) args(ctx context.Context, restore *citav1.Restore) ([]
 		args = append(args, "-restoreSnap", restore.Spec.Snapshot)
 	}
 
-	crypto, consensus, err := r.node.GetCryptoAndConsensus(ctx)
+	crypto, consensus, err := r.GetCryptoAndConsensus(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -269,48 +271,4 @@ func (r *RestoreExecutor) args(ctx context.Context, restore *citav1.Restore) ([]
 		args = append(args, "-restoreDir", "/state_data")
 	}
 	return args, nil
-}
-
-func GetMountPoint(path string) (string, error) {
-	res := strings.Split(path, "/")
-	if len(res) < 2 {
-		return "", fmt.Errorf("path invaild")
-	}
-	return fmt.Sprintf("/%s", res[1]), nil
-}
-
-func (r *RestoreExecutor) StartChainNode(ctx context.Context) {
-	log := controllerruntime.LoggerFrom(ctx)
-	// start chain node
-	err := r.node.Start(ctx)
-	if err != nil {
-		log.Error(err, "start chain node failed", "name", r.Obj.GetName(), "namespace", r.Obj.GetNamespace())
-		r.SetConditionFalseWithMessage(ctx, citav1.ConditionStartChainNodeReady, k8upv1.ReasonFailed, "start chain node failed: %v", err)
-		return
-	}
-	r.SetConditionTrue(ctx, citav1.ConditionStartChainNodeReady, k8upv1.ReasonReady)
-	return
-}
-
-func (r *RestoreExecutor) StopChainNode(ctx context.Context) (bool, error) {
-	log := controllerruntime.LoggerFrom(ctx)
-	// stop chain node
-	err := r.node.Stop(ctx)
-	if err != nil {
-		log.Error(err, "stop chain node failed", "name", r.Obj.GetName(), "namespace", r.Obj.GetNamespace())
-		r.SetConditionFalseWithMessage(ctx, citav1.ConditionStopChainNodeReady, k8upv1.ReasonFailed, "stop chain node failed: %v", err)
-		return false, err
-	}
-	stopped, err := r.node.CheckStopped(ctx)
-	if err != nil {
-		log.Error(err, "check chain node stopped failed", "name", r.Obj.GetName(), "namespace", r.Obj.GetNamespace())
-		r.SetConditionFalseWithMessage(ctx, citav1.ConditionStopChainNodeReady, k8upv1.ReasonFailed, "check chain node stopped failed: %v", err)
-		return false, err
-	}
-	if !stopped {
-		r.SetConditionUnknownWithMessage(ctx, citav1.ConditionStopChainNodeReady, k8upv1.ReasonWaiting, "waiting for chain node stopped")
-		return false, nil
-	}
-	r.SetConditionTrue(ctx, citav1.ConditionStopChainNodeReady, k8upv1.ReasonReady)
-	return true, nil
 }

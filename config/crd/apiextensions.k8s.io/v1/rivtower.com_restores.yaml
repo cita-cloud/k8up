@@ -48,6 +48,9 @@ spec:
             description: RestoreSpec can either contain an S3 restore point or a local
               one. For the local one you need to define an existing PVC.
             properties:
+              action:
+                description: Action
+                type: string
               activeDeadlineSeconds:
                 description: ActiveDeadlineSeconds specifies the duration in seconds
                   relative to the startTime that the job may be continuously active

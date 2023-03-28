@@ -4,23 +4,24 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	k8upv1 "github.com/k8up-io/k8up/v2/api/v1"
-	citav1 "github.com/k8up-io/k8up/v2/api/v1cita"
-	"github.com/k8up-io/k8up/v2/domain"
-	"github.com/k8up-io/k8up/v2/operator/cfg"
-	"github.com/k8up-io/k8up/v2/operator/executor"
-	"github.com/k8up-io/k8up/v2/operator/job"
+	"strconv"
+
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"strconv"
+
+	k8upv1 "github.com/k8up-io/k8up/v2/api/v1"
+	citav1 "github.com/k8up-io/k8up/v2/api/v1cita"
+	"github.com/k8up-io/k8up/v2/domain"
+	"github.com/k8up-io/k8up/v2/operator/cfg"
+	"github.com/k8up-io/k8up/v2/operator/citabase"
+	"github.com/k8up-io/k8up/v2/operator/job"
 )
 
 type FallbackExecutor struct {
-	executor.Generic
+	citabase.CITABase
 	fallback *citav1.BlockHeightFallback
-	node     domain.Node
 }
 
 // NewFallbackExecutor will return a new executor for Fallback jobs.
@@ -37,9 +38,10 @@ func NewFallbackExecutor(ctx context.Context, config job.Config) (*FallbackExecu
 		return nil, err
 	}
 
+	citaBase := citabase.NewCITABase(config, node)
+
 	return &FallbackExecutor{
-		Generic:  executor.Generic{Config: config},
-		node:     node,
+		CITABase: citaBase,
 		fallback: fallback}, nil
 }
 
@@ -54,12 +56,14 @@ func (f *FallbackExecutor) Execute(ctx context.Context) error {
 	log := controllerruntime.LoggerFrom(ctx)
 
 	// wait stop chain node
-	stopped, err := f.StopChainNode(ctx)
-	if err != nil {
-		return err
-	}
-	if !stopped {
-		return nil
+	if f.fallback.Spec.Action == citav1.StopAndStart {
+		stopped, err := f.StopChainNode(ctx)
+		if err != nil {
+			return err
+		}
+		if !stopped {
+			return nil
+		}
 	}
 
 	fallbackJob, err := f.createFallbackObject(ctx, f.fallback)
@@ -108,42 +112,6 @@ func (f *FallbackExecutor) jobName() string {
 	return citav1.FallbackType.String() + "-" + f.Obj.GetName()
 }
 
-func (f *FallbackExecutor) StartChainNode(ctx context.Context) {
-	log := controllerruntime.LoggerFrom(ctx)
-	// start chain node
-	err := f.node.Start(ctx)
-	if err != nil {
-		log.Error(err, "start chain node failed", "name", f.Obj.GetName(), "namespace", f.Obj.GetNamespace())
-		f.SetConditionFalseWithMessage(ctx, citav1.ConditionStartChainNodeReady, k8upv1.ReasonFailed, "start chain node failed: %v", err)
-		return
-	}
-	f.SetConditionTrue(ctx, citav1.ConditionStartChainNodeReady, k8upv1.ReasonReady)
-	return
-}
-
-func (f *FallbackExecutor) StopChainNode(ctx context.Context) (bool, error) {
-	log := controllerruntime.LoggerFrom(ctx)
-	// stop chain node
-	err := f.node.Stop(ctx)
-	if err != nil {
-		log.Error(err, "stop chain node failed", "name", f.Obj.GetName(), "namespace", f.Obj.GetNamespace())
-		f.SetConditionFalseWithMessage(ctx, citav1.ConditionStopChainNodeReady, k8upv1.ReasonFailed, "stop chain node failed: %v", err)
-		return false, err
-	}
-	stopped, err := f.node.CheckStopped(ctx)
-	if err != nil {
-		log.Error(err, "check chain node stopped failed", "name", f.Obj.GetName(), "namespace", f.Obj.GetNamespace())
-		f.SetConditionFalseWithMessage(ctx, citav1.ConditionStopChainNodeReady, k8upv1.ReasonFailed, "check chain node stopped failed: %v", err)
-		return false, err
-	}
-	if !stopped {
-		f.SetConditionUnknownWithMessage(ctx, citav1.ConditionStopChainNodeReady, k8upv1.ReasonWaiting, "waiting for chain node stopped")
-		return false, nil
-	}
-	f.SetConditionTrue(ctx, citav1.ConditionStopChainNodeReady, k8upv1.ReasonReady)
-	return true, nil
-}
-
 func (f *FallbackExecutor) prepareVolumes() []corev1.Volume {
 	vols := make([]corev1.Volume, 0)
 	vols = append(vols, corev1.Volume{
@@ -180,7 +148,7 @@ func (f *FallbackExecutor) newVolumeMounts() []corev1.VolumeMount {
 }
 
 func (f *FallbackExecutor) args(ctx context.Context) ([]string, error) {
-	crypto, consensus, err := f.node.GetCryptoAndConsensus(ctx)
+	crypto, consensus, err := f.GetCryptoAndConsensus(ctx)
 	if err != nil {
 		return nil, err
 	}

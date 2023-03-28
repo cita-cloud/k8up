@@ -53,19 +53,27 @@ func (c *CITABase) StopChainNode(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (c *CITABase) StartChainNode(ctx context.Context) {
+func (c *CITABase) StartChainNode(ctx context.Context) error {
 	log := controllerruntime.LoggerFrom(ctx)
-	// start chain node
-	err := c.node.Start(ctx)
+	stopped, err := c.node.CheckStopped(ctx)
 	if err != nil {
-		log.Error(err, "start chain node failed", "name", c.Obj.GetName(), "namespace", c.Obj.GetNamespace())
-		c.SetConditionFalseWithMessage(ctx, citav1.ConditionStartChainNodeReady, k8upv1.ReasonFailed, "start chain node failed: %v", err)
-		return
+		log.Error(err, "check chain node stopped failed", "name", c.Obj.GetName(), "namespace", c.Obj.GetNamespace())
+		c.SetConditionFalseWithMessage(ctx, citav1.ConditionStopChainNodeReady, k8upv1.ReasonFailed, "check chain node stopped failed: %v", err)
+		return err
+	}
+	if stopped {
+		// start chain node
+		err = c.node.Start(ctx)
+		if err != nil {
+			log.Error(err, "start chain node failed", "name", c.Obj.GetName(), "namespace", c.Obj.GetNamespace())
+			c.SetConditionFalseWithMessage(ctx, citav1.ConditionStartChainNodeReady, k8upv1.ReasonFailed, "start chain node failed: %v", err)
+			return err
+		}
 	}
 	c.SetConditionTrueWithMessage(ctx, citav1.ConditionStartChainNodeReady, k8upv1.ReasonReady,
 		"the cita node %s/%s has benn started",
 		c.Obj.GetName(), c.Obj.GetNamespace())
-	return
+	return nil
 }
 
 func (c *CITABase) GetMountPoint(path string) (string, error) {

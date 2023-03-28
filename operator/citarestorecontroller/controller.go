@@ -48,6 +48,9 @@ func (r *RestoreReconciler) Provision(ctx context.Context, obj *citav1.Restore) 
 
 	if obj.Status.HasFinished() {
 		executor.cleanupOldRestores(ctx, obj)
+		if obj.Spec.Action == citav1.StopAndStart {
+			_ = executor.StartChainNode(ctx)
+		}
 		return controllerruntime.Result{}, nil
 	}
 

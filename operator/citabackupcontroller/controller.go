@@ -50,7 +50,9 @@ func (b *BackupReconciler) Provision(ctx context.Context, obj *citav1.Backup) (c
 	}
 	if obj.Status.HasFinished() {
 		executor.cleanupOldBackups(ctx)
-		executor.StartChainNode(ctx)
+		if obj.Spec.Action == citav1.StopAndStart {
+			_ = executor.StartChainNode(ctx)
+		}
 		return controllerruntime.Result{}, nil
 	}
 

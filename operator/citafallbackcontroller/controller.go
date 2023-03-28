@@ -48,6 +48,9 @@ func (f *FallbackReconciler) Provision(ctx context.Context, obj *citav1.BlockHei
 
 	if obj.Status.HasFinished() {
 		executor.cleanupOldFallbacks(ctx, obj)
+		if obj.Spec.Action == citav1.StopAndStart {
+			_ = executor.StartChainNode(ctx)
+		}
 		return controllerruntime.Result{}, nil
 	}
 
