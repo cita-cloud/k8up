@@ -48,6 +48,7 @@ func (f *SwitchoverReconciler) Provision(ctx context.Context, obj *citav1.Switch
 
 	if obj.Status.HasFinished() {
 		executor.cleanupOldSwitchover(ctx, obj)
+		executor.StartChainNodes(ctx)
 		return controllerruntime.Result{}, nil
 	}
 

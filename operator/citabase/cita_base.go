@@ -32,7 +32,7 @@ func (c *CITABase) StopChainNode(ctx context.Context) (bool, error) {
 	stopped, err := c.node.CheckStopped(ctx)
 	if err != nil {
 		log.Error(err, "check chain node stopped failed", "name", c.Obj.GetName(), "namespace", c.Obj.GetNamespace())
-		c.SetConditionFalseWithMessage(ctx, citav1.ConditionStopChainNodeReady, k8upv1.ReasonFailed, "check chain node stopped failed: %v", err)
+		c.SetConditionFalseWithMessage(ctx, citav1.ConditionCheckChainNodeReady, k8upv1.ReasonFailed, "check chain node stopped failed: %v", err)
 		return false, err
 	}
 	if !stopped {
@@ -48,7 +48,7 @@ func (c *CITABase) StopChainNode(ctx context.Context) (bool, error) {
 		return false, nil
 	}
 	c.SetConditionTrueWithMessage(ctx, citav1.ConditionStopChainNodeReady, k8upv1.ReasonReady,
-		"the cita node %s/%s has benn stopped",
+		"the cita node %s/%s has been stopped",
 		c.Obj.GetName(), c.Obj.GetNamespace())
 	return true, nil
 }
@@ -58,7 +58,7 @@ func (c *CITABase) StartChainNode(ctx context.Context) error {
 	stopped, err := c.node.CheckStopped(ctx)
 	if err != nil {
 		log.Error(err, "check chain node stopped failed", "name", c.Obj.GetName(), "namespace", c.Obj.GetNamespace())
-		c.SetConditionFalseWithMessage(ctx, citav1.ConditionStopChainNodeReady, k8upv1.ReasonFailed, "check chain node stopped failed: %v", err)
+		c.SetConditionFalseWithMessage(ctx, citav1.ConditionCheckChainNodeReady, k8upv1.ReasonFailed, "check chain node stopped failed: %v", err)
 		return err
 	}
 	if stopped {
@@ -71,7 +71,7 @@ func (c *CITABase) StartChainNode(ctx context.Context) error {
 		}
 	}
 	c.SetConditionTrueWithMessage(ctx, citav1.ConditionStartChainNodeReady, k8upv1.ReasonReady,
-		"the cita node %s/%s has benn started",
+		"the cita node %s/%s has been started",
 		c.Obj.GetName(), c.Obj.GetNamespace())
 	return nil
 }

@@ -94,6 +94,11 @@ func (s *SwitchoverExecutor) createSwitchoverObject(ctx context.Context, switcho
 	batchJob.Name = s.jobName()
 	batchJob.Namespace = switchover.Namespace
 	_, err := controllerutil.CreateOrUpdate(ctx, s.Client, batchJob, func() error {
+		mutateErr := job.MutateBatchJob(batchJob, switchover, s.Config)
+		if mutateErr != nil {
+			return mutateErr
+		}
+
 		batchJob.Spec.Template.Spec.ServiceAccountName = cfg.Config.ServiceAccount
 
 		args := s.args()
@@ -111,20 +116,36 @@ func (s *SwitchoverExecutor) jobName() string {
 
 func (s *SwitchoverExecutor) StartChainNodes(ctx context.Context) {
 	log := controllerruntime.LoggerFrom(ctx)
-	err := s.destNode.Start(ctx)
-	if err != nil {
-		log.Error(err, "start chain node failed", "name", s.Obj.GetName(), "namespace", s.Obj.GetNamespace(), "node", s.switchover.Spec.SourceNode)
-		s.SetConditionFalseWithMessage(ctx, citav1.ConditionStartChainNodeReady, k8upv1.ReasonFailed, "start chain node failed: %v", err)
-		return
-	}
-	err = s.sourceNode.Start(ctx)
 
+	destNodeStopped, err := s.destNode.CheckStopped(ctx)
 	if err != nil {
-		log.Error(err, "start chain node failed", "name", s.Obj.GetName(), "namespace", s.Obj.GetNamespace(), "node", s.switchover.Spec.DestNode)
-		s.SetConditionFalseWithMessage(ctx, citav1.ConditionStartChainNodeReady, k8upv1.ReasonFailed, "start chain node failed: %v", err)
-		return
+		log.Error(err, "check chain node stopped failed", "name", s.Obj.GetName(), "namespace", s.Obj.GetNamespace(), "node", s.switchover.Spec.DestNode)
+		s.SetConditionFalseWithMessage(ctx, citav1.ConditionCheckChainNodeReady, k8upv1.ReasonFailed, "check chain node stopped failed: %v", err)
 	}
-	s.SetConditionTrue(ctx, citav1.ConditionStartChainNodeReady, k8upv1.ReasonReady)
+	if destNodeStopped {
+		err = s.destNode.Start(ctx)
+		if err != nil {
+			log.Error(err, "start chain node failed", "name", s.Obj.GetName(), "namespace", s.Obj.GetNamespace(), "node", s.switchover.Spec.DestNode)
+			s.SetConditionFalseWithMessage(ctx, citav1.ConditionStartChainNodeReady, k8upv1.ReasonFailed, "start chain node failed: %v", err)
+			return
+		}
+	}
+
+	sourceNodeStopped, err := s.sourceNode.CheckStopped(ctx)
+	if err != nil {
+		log.Error(err, "check chain node stopped failed", "name", s.Obj.GetName(), "namespace", s.Obj.GetNamespace(), "node", s.switchover.Spec.SourceNode)
+		s.SetConditionFalseWithMessage(ctx, citav1.ConditionCheckChainNodeReady, k8upv1.ReasonFailed, "check chain node stopped failed: %v", err)
+	}
+	if sourceNodeStopped {
+		err = s.sourceNode.Start(ctx)
+		if err != nil {
+			log.Error(err, "start chain node failed", "name", s.Obj.GetName(), "namespace", s.Obj.GetNamespace(), "node", s.switchover.Spec.SourceNode)
+			s.SetConditionFalseWithMessage(ctx, citav1.ConditionStartChainNodeReady, k8upv1.ReasonFailed, "start chain node failed: %v", err)
+			return
+		}
+	}
+
+	s.SetConditionTrueWithMessage(ctx, citav1.ConditionStartChainNodeReady, k8upv1.ReasonReady, "start all chain node successful")
 	return
 }
 
@@ -148,19 +169,19 @@ func (s *SwitchoverExecutor) StopChainNodes(ctx context.Context) (bool, error) {
 	sourceNodeStopped, err := s.sourceNode.CheckStopped(ctx)
 	if err != nil {
 		log.Error(err, "check chain node stopped failed", "name", s.Obj.GetName(), "namespace", s.Obj.GetNamespace(), "node", s.switchover.Spec.SourceNode)
-		s.SetConditionFalseWithMessage(ctx, citav1.ConditionStopChainNodeReady, k8upv1.ReasonFailed, "check chain node stopped failed: %v", err)
+		s.SetConditionFalseWithMessage(ctx, citav1.ConditionCheckChainNodeReady, k8upv1.ReasonFailed, "check chain node stopped failed: %v", err)
 		return false, err
 	}
 
 	destNodeStopped, err := s.destNode.CheckStopped(ctx)
 	if err != nil {
 		log.Error(err, "check chain node stopped failed", "name", s.Obj.GetName(), "namespace", s.Obj.GetNamespace(), "node", s.switchover.Spec.DestNode)
-		s.SetConditionFalseWithMessage(ctx, citav1.ConditionStopChainNodeReady, k8upv1.ReasonFailed, "check chain node stopped failed: %v", err)
+		s.SetConditionFalseWithMessage(ctx, citav1.ConditionCheckChainNodeReady, k8upv1.ReasonFailed, "check chain node stopped failed: %v", err)
 		return false, err
 	}
 
 	if !sourceNodeStopped || !destNodeStopped {
-		s.SetConditionUnknownWithMessage(ctx, citav1.ConditionStopChainNodeReady, k8upv1.ReasonWaiting, "waiting for chain node stopped")
+		s.SetConditionTrueWithMessage(ctx, citav1.ConditionCheckChainNodeReady, k8upv1.ReasonWaiting, "waiting for chain node stopped")
 		return false, nil
 	}
 	return true, nil
