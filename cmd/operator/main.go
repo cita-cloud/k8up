@@ -2,6 +2,8 @@ package operator
 
 import (
 	"fmt"
+	"github.com/k8up-io/k8up/v2/operator/citaprunecontroller"
+	"github.com/k8up-io/k8up/v2/operator/citaschedulecontroller"
 	"strings"
 
 	k8upv1 "github.com/k8up-io/k8up/v2/api/v1"
@@ -127,6 +129,8 @@ func operatorMain(c *cli.Context) error {
 		"CITARestore":    citarestorecontroller.SetupWithManager,
 		"CITAFallback":   citafallbackcontroller.SetupWithManager,
 		"CITASwitchover": citaswitchovercontroller.SetupWithManager,
+		"CITAPrune":      citaprunecontroller.SetupWithManager,
+		"CITASchedule":   citaschedulecontroller.SetupWithManager,
 	} {
 		if setupErr := setupFn(mgr); setupErr != nil {
 			operatorLog.Error(setupErr, "unable to initialize operator mode", "step", "controller", "controller", name)
