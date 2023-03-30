@@ -80,11 +80,3 @@ func BuildIncludePathArgs(includePathList []string) []string {
 	}
 	return args
 }
-
-//func (g *Generic) getObject(namespace, name string, object client.Object) error {
-//	err := g.Client.Get(g.CTX, types.NamespacedName{Namespace: namespace, Name: name}, object)
-//	if err != nil {
-//		return err
-//	}
-//	return nil
-//}
