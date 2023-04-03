@@ -5,6 +5,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/utils/pointer"
 )
 
 // ScheduleSpec defines the schedules for the various job types.
@@ -37,11 +38,6 @@ type CITAPruneSchedule struct {
 	PruneSpec              `json:",inline"`
 	*k8upv1.ScheduleCommon `json:",inline"`
 }
-
-//func (in *CITAPruneSchedule) GetDeepCopy() k8upv1.ScheduleSpecInterface {
-//	//TODO implement me
-//	panic("implement me")
-//}
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
@@ -116,7 +112,7 @@ func (s *Schedule) GetFailedJobsHistoryLimit() *int {
 	if s.Spec.FailedJobsHistoryLimit != nil {
 		return s.Spec.FailedJobsHistoryLimit
 	}
-	return s.Spec.KeepJobs
+	return pointer.Int(KeepJobs)
 }
 
 // GetSuccessfulJobsHistoryLimit returns successful jobs history limit.
@@ -125,5 +121,5 @@ func (s *Schedule) GetSuccessfulJobsHistoryLimit() *int {
 	if s.Spec.SuccessfulJobsHistoryLimit != nil {
 		return s.Spec.SuccessfulJobsHistoryLimit
 	}
-	return s.Spec.KeepJobs
+	return pointer.Int(KeepJobs)
 }

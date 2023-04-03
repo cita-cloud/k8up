@@ -3,6 +3,7 @@ package v1cita
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/pointer"
 
 	k8upv1 "github.com/k8up-io/k8up/v2/api/v1"
 )
@@ -75,7 +76,7 @@ func (p *Prune) GetFailedJobsHistoryLimit() *int {
 	if p.Spec.FailedJobsHistoryLimit != nil {
 		return p.Spec.FailedJobsHistoryLimit
 	}
-	return p.Spec.KeepJobs
+	return pointer.Int(KeepJobs)
 }
 
 // GetSuccessfulJobsHistoryLimit returns successful jobs history limit.
@@ -84,7 +85,7 @@ func (p *Prune) GetSuccessfulJobsHistoryLimit() *int {
 	if p.Spec.SuccessfulJobsHistoryLimit != nil {
 		return p.Spec.SuccessfulJobsHistoryLimit
 	}
-	return p.Spec.KeepJobs
+	return pointer.Int(KeepJobs)
 }
 
 // GetJobObjects returns a sortable list of jobs

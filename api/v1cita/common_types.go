@@ -14,6 +14,8 @@ const (
 	ConditionStartChainNodeReady k8upv1.ConditionType = "StartChainNodeReady"
 	ConditionStopChainNodeReady  k8upv1.ConditionType = "StopChainNodeReady"
 	ConditionCheckChainNodeReady k8upv1.ConditionType = "CheckChainNodeReady"
+
+	KeepJobs int = 3
 )
 
 type NodeInfo struct {
