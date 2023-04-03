@@ -54,7 +54,6 @@ clear_pv_data() {
 
 restic() {
 	kubectl run "restic-$(timestamp)" \
-		--rm \
 		--attach \
 		--restart Never \
 		--namespace "${DETIK_CLIENT_NAMESPACE-"k8up-system"}" \
