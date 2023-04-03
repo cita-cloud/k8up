@@ -154,6 +154,10 @@ func (r *Restic) folderRestore(restoreDir string, snapshot Snapshot, restoreFilt
 		log.Info("need clean all file first")
 		needRemovePath := filepath.Join(restoreDir, "*")
 		contents, err := filepath.Glob(needRemovePath)
+		if err != nil {
+			log.Error(err, "glob happens error", "need remove path", needRemovePath)
+			return err
+		}
 		for _, item := range contents {
 			err = os.RemoveAll(item)
 			if err != nil {
@@ -166,6 +170,10 @@ func (r *Restic) folderRestore(restoreDir string, snapshot Snapshot, restoreFilt
 		for _, includePath := range includePaths {
 			needRemovePath := filepath.Join(restoreDir, includePath)
 			contents, err := filepath.Glob(needRemovePath)
+			if err != nil {
+				log.Error(err, "glob happens error", "need remove path", needRemovePath)
+				return err
+			}
 			for _, item := range contents {
 				err = os.RemoveAll(item)
 				if err != nil {

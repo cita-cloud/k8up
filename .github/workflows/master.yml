@@ -5,6 +5,7 @@ on:
     branches:
     - master
     - master-cita
+    - merge-from-v2.6.0
 
 jobs:
   dist:

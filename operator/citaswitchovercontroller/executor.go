@@ -146,7 +146,6 @@ func (s *SwitchoverExecutor) StartChainNodes(ctx context.Context) {
 	}
 
 	s.SetConditionTrueWithMessage(ctx, citav1.ConditionStartChainNodeReady, k8upv1.ReasonReady, "start all chain node successful")
-	return
 }
 
 // StopChainNodes stop source node and dest node

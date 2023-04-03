@@ -54,9 +54,7 @@ func (b *BackupExecutor) GetConcurrencyLimit() int {
 // Execute triggers the actual batch.job creation on the cluster.
 // It will also register a callback function on the observer so the PreBackupPods can be removed after the backup has finished.
 func (b *BackupExecutor) Execute(ctx context.Context) error {
-	var err error
-
-	err = b.createServiceAccountAndBinding(ctx)
+	err := b.createServiceAccountAndBinding(ctx)
 	if err != nil {
 		return err
 	}

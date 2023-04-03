@@ -3,6 +3,7 @@ package v1cita
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/pointer"
 
 	k8upv1 "github.com/k8up-io/k8up/v2/api/v1"
 )
@@ -82,7 +83,7 @@ func (s *Switchover) GetFailedJobsHistoryLimit() *int {
 	if s.Spec.FailedJobsHistoryLimit != nil {
 		return s.Spec.FailedJobsHistoryLimit
 	}
-	return s.Spec.KeepJobs
+	return pointer.Int(KeepJobs)
 }
 
 // GetSuccessfulJobsHistoryLimit returns successful jobs history limit.
@@ -91,7 +92,7 @@ func (s *Switchover) GetSuccessfulJobsHistoryLimit() *int {
 	if s.Spec.SuccessfulJobsHistoryLimit != nil {
 		return s.Spec.SuccessfulJobsHistoryLimit
 	}
-	return s.Spec.KeepJobs
+	return pointer.Int(KeepJobs)
 }
 
 // GetJobObjects returns a sortable list of jobs
