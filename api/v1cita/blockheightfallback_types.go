@@ -16,6 +16,8 @@ type BlockHeightFallbackSpec struct {
 	NodeInfo `json:",inline"`
 	// BlockHeight
 	BlockHeight int64 `json:"blockHeight"`
+	// DeleteConsensusData weather or not delete consensus data when restore
+	DeleteConsensusData bool `json:"deleteConsensusData,omitempty"`
 }
 
 //+kubebuilder:object:root=true

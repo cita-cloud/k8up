@@ -307,7 +307,9 @@ func (b *BackupExecutor) args(ctx context.Context) ([]string, error) {
 	case b.backup.Spec.DataType.State != nil:
 		args = append(args, "-dataType", "state")
 		args = append(args, "-blockHeight", strconv.FormatInt(b.backup.Spec.DataType.State.BlockHeight, 10))
-		args = append(args, "-crypto", crypto)
+		if crypto != "" {
+			args = append(args, "-crypto", crypto)
+		}
 		args = append(args, "-consensus", consensus)
 		args = append(args, "-backupDir", "/state_data")
 		args = append(args, "-nodeDeployMethod", string(b.backup.Spec.DeployMethod))

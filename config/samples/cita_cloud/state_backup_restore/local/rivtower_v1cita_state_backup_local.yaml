@@ -10,8 +10,11 @@ spec:
   chain: test-chain-zenoh-overlord
   dataType:
     state:
-      blockHeight: 50
-
+      blockHeight: 10
+#  podSecurityContext:
+#    runAsGroup: 1000
+#    runAsUser: 1000
+#    fsGroup: 1000
   failedJobsHistoryLimit: 2
   successfulJobsHistoryLimit: 2
 #  tags:
@@ -25,3 +28,4 @@ spec:
     local:
       mountPath: "/hello"
       storageClass: "nas-client-provisioner"
+

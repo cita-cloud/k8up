@@ -14,9 +14,10 @@ import (
 )
 
 type Fallback struct {
-	BlockHeight int64
-	Crypto      string
-	Consensus   string
+	BlockHeight         int64
+	Crypto              string
+	Consensus           string
+	DeleteConsensusData bool
 }
 
 var fallback = &Fallback{}
@@ -46,6 +47,12 @@ var (
 				Value:       "bft",
 				Destination: &fallback.Consensus,
 			},
+			&cli.BoolFlag{
+				Name:        "delete-consensus-data",
+				Usage:       "Delete consensus data or not",
+				Value:       false,
+				Destination: &fallback.DeleteConsensusData,
+			},
 		},
 	}
 )
@@ -73,11 +80,15 @@ func cancelOnTermination(cancel context.CancelFunc, mainLogger logr.Logger) {
 func run(logger logr.Logger) error {
 	execer := exec.New()
 	logger.Info("exec block height fallback...", "height", fallback.BlockHeight)
-	err := execer.Command("cloud-op", "recover", fmt.Sprintf("%d", fallback.BlockHeight),
+	args := []string{"recover", fmt.Sprintf("%d", fallback.BlockHeight),
 		"--node-root", "/data",
 		"--config-path", "/cita-config/config.toml",
 		"--crypto", fallback.Crypto,
-		"--consensus", fallback.Consensus).Run()
+		"--consensus", fallback.Consensus}
+	if fallback.DeleteConsensusData {
+		args = append(args, "--is-clear")
+	}
+	err := execer.Command("cloud-op", args...).Run()
 	if err != nil {
 		logger.Error(err, "exec block height fallback failed")
 		return err

@@ -63,7 +63,7 @@ type fileNode struct {
 }
 
 // Restore triggers a restore of a snapshot
-func (r *Restic) Restore(snapshotID string, options RestoreOptions, tags ArrayOpts, includePaths []string) error {
+func (r *Restic) Restore(snapshotID string, options RestoreOptions, tags ArrayOpts, includePaths []string, deleteConsensusData bool) error {
 	restorelogger := r.logger.WithName("restore")
 
 	restorelogger.Info("restore initialised")
@@ -87,7 +87,7 @@ func (r *Restic) Restore(snapshotID string, options RestoreOptions, tags ArrayOp
 	var stats *RestoreStats
 	switch options.RestoreType {
 	case FolderRestore:
-		err = r.folderRestore(options.RestoreDir, latestSnap, options.RestoreFilter, options.Verify, restorelogger, includePaths)
+		err = r.folderRestore(options.RestoreDir, latestSnap, options.RestoreFilter, options.Verify, restorelogger, includePaths, deleteConsensusData)
 		stats = &RestoreStats{
 			RestoreLocation: options.RestoreDir,
 			RestoredFiles:   []string{"not supported for folder restores"},
@@ -139,7 +139,38 @@ func (r *Restic) getLatestSnapshot(snapshotID string, log logr.Logger) (dto.Snap
 	return snapshot, err
 }
 
-func (r *Restic) folderRestore(restoreDir string, snapshot dto.Snapshot, restoreFilter string, verify bool, log logr.Logger, includePaths []string) error {
+const (
+	RaftConsensusDir     string = "raft-data-dir"
+	OverLordConsensusDir string = "overlord_wal"
+)
+
+func removeConsensusData(parentDir string) error {
+	_, err := os.Stat(filepath.Join(parentDir, RaftConsensusDir))
+	if err == nil {
+		// exist, delete it
+		err := os.RemoveAll(filepath.Join(parentDir, RaftConsensusDir))
+		if err != nil {
+			return err
+		}
+	}
+	if !os.IsNotExist(err) {
+		return err
+	}
+	_, err = os.Stat(filepath.Join(parentDir, OverLordConsensusDir))
+	if err == nil {
+		// exist, delete it
+		err := os.RemoveAll(filepath.Join(parentDir, OverLordConsensusDir))
+		if err != nil {
+			return err
+		}
+	}
+	if !os.IsNotExist(err) {
+		return err
+	}
+	return nil
+}
+
+func (r *Restic) folderRestore(restoreDir string, snapshot dto.Snapshot, restoreFilter string, verify bool, log logr.Logger, includePaths []string, deleteConsensusData bool) error {
 	var cleanAllFlag bool
 	if len(includePaths) == 0 {
 		cleanAllFlag = true
@@ -183,6 +214,14 @@ func (r *Restic) folderRestore(restoreDir string, snapshot dto.Snapshot, restore
 				}
 			}
 		}
+	}
+	if deleteConsensusData {
+		err := removeConsensusData(restoreDir)
+		if err != nil {
+			log.Error(err, "unable to remove consensus data", "path", restoreDir)
+			return err
+		}
+		log.Info("remove consensus data successful")
 	}
 	var linkedDir string
 	if cfg.Config.RestoreTrimPath {

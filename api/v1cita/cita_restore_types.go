@@ -17,6 +17,8 @@ type RestoreSpec struct {
 	NodeInfo `json:",inline"`
 	// Backup
 	Backup string `json:"backup,omitempty"`
+	// DeleteConsensusData weather or not delete consensus data when restore
+	DeleteConsensusData bool `json:"deleteConsensusData,omitempty"`
 }
 
 // +kubebuilder:object:root=true

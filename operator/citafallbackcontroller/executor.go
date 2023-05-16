@@ -152,7 +152,13 @@ func (f *FallbackExecutor) args(ctx context.Context) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return []string{"--block-height", strconv.FormatInt(f.fallback.Spec.BlockHeight, 10),
-		"--crypto", crypto,
-		"--consensus", consensus}, nil
+	args := []string{"--block-height", strconv.FormatInt(f.fallback.Spec.BlockHeight, 10),
+		"--consensus", consensus}
+	if crypto != "" {
+		args = append(args, "--crypto", crypto)
+	}
+	if f.fallback.Spec.DeleteConsensusData {
+		args = append(args, "--delete-consensus-data")
+	}
+	return args, nil
 }

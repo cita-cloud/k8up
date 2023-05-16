@@ -3584,6 +3584,10 @@ spec:
                     type: string
                   concurrentRunsAllowed:
                     type: boolean
+                  deleteConsensusData:
+                    description: DeleteConsensusData weather or not delete consensus
+                      data when restore
+                    type: boolean
                   deployMethod:
                     description: DeployMethod
                     type: string

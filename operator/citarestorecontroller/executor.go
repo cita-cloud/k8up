@@ -266,9 +266,14 @@ func (r *RestoreExecutor) args(ctx context.Context, restore *citav1.Restore) ([]
 		args = append(args, "-dataType", "state")
 		args = append(args, "-blockHeight", strconv.FormatInt(r.backup.Spec.DataType.State.BlockHeight, 10))
 		// todo:
-		args = append(args, "-crypto", crypto)
+		if crypto != "" {
+			args = append(args, "-crypto", crypto)
+		}
 		args = append(args, "-consensus", consensus)
 		args = append(args, "-restoreDir", "/state_data")
+	}
+	if restore.Spec.DeleteConsensusData {
+		args = append(args, "--delete-consensus-data")
 	}
 	return args, nil
 }

@@ -40,12 +40,13 @@ type Configuration struct {
 	BackupContainerAnnotation     string
 	BackupDir                     string
 	// CITA Option Start
-	NodeDeployMethod string
-	DataType         string
-	BlockHeight      int64
-	CITACrypto       string
-	CITAConsensus    string
-	Paths            []string
+	NodeDeployMethod    string
+	DataType            string
+	BlockHeight         int64
+	CITACrypto          string
+	CITAConsensus       string
+	DeleteConsensusData bool
+	Paths               []string
 	// CITA Option End
 
 	SkipPreBackup bool

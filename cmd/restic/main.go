@@ -59,8 +59,9 @@ var (
 			&cli.StringFlag{Destination: &cfg.Config.NodeDeployMethod, Name: "nodeDeployMethod", Usage: "Method of node deploy, 'python' or 'cloud-config', customized for CITA"},
 			&cli.StringFlag{Destination: &cfg.Config.DataType, Name: "dataType", Usage: "Type of data, 'full' or 'state', customized for CITA"},
 			&cli.Int64Flag{Destination: &cfg.Config.BlockHeight, Name: "blockHeight", Usage: "The block height you want to state-backup or state-recover, customized for CITA"},
-			&cli.StringFlag{Destination: &cfg.Config.CITACrypto, Name: "crypto", Usage: "Type of node crypto, 'sm' or 'eth', customized for CITA"},
+			&cli.StringFlag{Destination: &cfg.Config.CITACrypto, Name: "crypto", Usage: "Type of node crypto, 'sm' or 'eth', customized for CITA", Value: "sm"},
 			&cli.StringFlag{Destination: &cfg.Config.CITAConsensus, Name: "consensus", Usage: "Type of node consensus, 'bft' or 'raft' or 'overlord', customized for CITA"},
+			&cli.BoolFlag{Destination: &cfg.Config.DeleteConsensusData, Name: "deleteConsensusData", Usage: "Delete consensus data or not"},
 			&cli.StringSliceFlag{Name: "path", Usage: "List of paths you want to backup"},
 
 			&cli.StringFlag{Destination: &cfg.Config.RestoreDir, Name: "restoreDir", EnvVars: []string{restoreDirEnvKey}, Value: "/data", Usage: "Set to which directory the restore should be performed."},
@@ -144,7 +145,8 @@ func run(ctx context.Context, resticCLI *resticCli.Restic, mainLogger logr.Logge
 				"/cita-config",
 				"/state_data",
 				cfg.Config.CITACrypto,
-				cfg.Config.CITAConsensus)
+				cfg.Config.CITAConsensus,
+				cfg.Config.DeleteConsensusData)
 			if err != nil {
 				return err
 			}
@@ -261,7 +263,7 @@ func doRestore(resticCLI *resticCli.Restic) error {
 				AccessKey: cfg.Config.RestoreS3AccessKey,
 				SecretKey: cfg.Config.RestoreS3SecretKey,
 			},
-		}, cfg.Config.Tags, cfg.Config.Paths); err != nil {
+		}, cfg.Config.Tags, cfg.Config.Paths, cfg.Config.DeleteConsensusData); err != nil {
 			return fmt.Errorf("restore job failed: %w", err)
 		}
 	}

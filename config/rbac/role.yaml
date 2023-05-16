@@ -82,9 +82,16 @@ rules:
   resources:
   - pods
   verbs:
+  - '*'
   - get
   - list
   - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods/exec
+  verbs:
+  - '*'
 - apiGroups:
   - ""
   resources:
@@ -299,6 +306,17 @@ rules:
   - get
   - list
   - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  - roles
+  verbs:
+  - create
+  - delete
+  - get
+  - list
   - watch
 - apiGroups:
   - rivtower.com
