@@ -11,7 +11,7 @@ func (r *Restic) DoCITAStateBackup(blockHeight int64, nodeRoot string, configPat
 		"--node-root", nodeRoot,
 		"--config-path", fmt.Sprintf("%s/config.toml", configPath),
 		"--backup-path", backupPath,
-		"--crypto", crypto,
+		//"--crypto", crypto,
 		"--consensus", consensus).Run()
 	if err != nil {
 		return err
@@ -25,7 +25,7 @@ func (r *Restic) DoCITAStateRecover(blockHeight int64, nodeRoot string, configPa
 		"--node-root", nodeRoot,
 		"--config-path", fmt.Sprintf("%s/config.toml", configPath),
 		"--backup-path", backupPath,
-		"--crypto", crypto,
+		//"--crypto", crypto,
 		"--consensus", consensus).Run()
 	if err != nil {
 		return err

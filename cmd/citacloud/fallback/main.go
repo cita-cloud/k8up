@@ -76,7 +76,7 @@ func run(logger logr.Logger) error {
 	err := execer.Command("cloud-op", "recover", fmt.Sprintf("%d", fallback.BlockHeight),
 		"--node-root", "/data",
 		"--config-path", "/cita-config/config.toml",
-		"--crypto", fallback.Crypto,
+		//"--crypto", fallback.Crypto,
 		"--consensus", fallback.Consensus).Run()
 	if err != nil {
 		logger.Error(err, "exec block height fallback failed")
