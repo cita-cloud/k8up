@@ -66,6 +66,7 @@ func MutateBatchJob(batchJob *batchv1.Job, jobObj k8upv1.JobObject, config Confi
 	}
 	containers[0].Name = config.Obj.GetType().String()
 	containers[0].Image = cfg.Config.BackupImage
+	containers[0].ImagePullPolicy = corev1.PullPolicy(cfg.Config.BackupImagePullPolicy)
 	containers[0].Command = cfg.Config.BackupCommandRestic
 	containers[0].Resources = config.Obj.GetResources()
 	batchJob.Spec.Template.Spec.Containers = containers

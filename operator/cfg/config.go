@@ -70,6 +70,7 @@ type Configuration struct {
 	GlobalMemoryResourceRequest      string
 	GlobalMemoryResourceLimit        string
 	BackupImage                      string
+	BackupImagePullPolicy            string
 	BackupCommandRestic              []string
 	MetricsBindAddress               string
 	PodExecRoleName                  string

@@ -2,14 +2,21 @@ package operator
 
 import (
 	"fmt"
+	"github.com/k8up-io/k8up/v2/operator/citaprunecontroller"
+	"github.com/k8up-io/k8up/v2/operator/citaschedulecontroller"
 	"strings"
 
 	k8upv1 "github.com/k8up-io/k8up/v2/api/v1"
+	citav1 "github.com/k8up-io/k8up/v2/api/v1cita"
 	"github.com/k8up-io/k8up/v2/cmd"
 	"github.com/k8up-io/k8up/v2/operator/archivecontroller"
 	"github.com/k8up-io/k8up/v2/operator/backupcontroller"
 	"github.com/k8up-io/k8up/v2/operator/cfg"
 	"github.com/k8up-io/k8up/v2/operator/checkcontroller"
+	"github.com/k8up-io/k8up/v2/operator/citabackupcontroller"
+	"github.com/k8up-io/k8up/v2/operator/citafallbackcontroller"
+	"github.com/k8up-io/k8up/v2/operator/citarestorecontroller"
+	"github.com/k8up-io/k8up/v2/operator/citaswitchovercontroller"
 	"github.com/k8up-io/k8up/v2/operator/prunecontroller"
 	"github.com/k8up-io/k8up/v2/operator/restorecontroller"
 	"github.com/k8up-io/k8up/v2/operator/schedulecontroller"
@@ -64,6 +71,7 @@ var (
 			&cli.StringFlag{Destination: &cfg.Config.GlobalMemoryResourceLimit, Name: "global-memory-limit", EnvVars: []string{"BACKUP_GLOBAL_MEMORY_LIMIT"}, Usage: "set the memory limit for scheduled jobs"},
 
 			&cli.StringFlag{Destination: &cfg.Config.BackupImage, Name: "image", EnvVars: []string{"BACKUP_IMAGE"}, Value: "ghcr.io/k8up-io/k8up:latest", Usage: "URL of the restic image"},
+			&cli.StringFlag{Destination: &cfg.Config.BackupImagePullPolicy, Name: "pull-policy", EnvVars: []string{"BACKUP_IMAGE_PULL_POLICY"}, Value: "IfNotPresent", Usage: "Pull policy of the restic image"},
 			&cli.StringSliceFlag{Name: argCommandRestic, EnvVars: []string{"BACKUP_COMMAND_RESTIC"}, Value: cli.NewStringSlice("/usr/local/bin/k8up", "restic"), Usage: "The command that is executed for restic backups."},
 			&cli.StringSliceFlag{Name: argResticOptions, EnvVars: []string{"BACKUP_RESTIC_OPTIONS"}, Usage: "Pass custom restic options in the form 'key=value,key2=value2'. See https://restic.readthedocs.io/en/stable/manual_rest.html?highlight=--option#usage-help"},
 			&cli.StringFlag{Destination: &cfg.Config.MountPath, Name: "datapath", Aliases: []string{"mountpath"}, EnvVars: []string{"BACKUP_DATAPATH"}, Value: "/data", Usage: "to which path the PVCs should get mounted in the backup container"},
@@ -116,6 +124,13 @@ func operatorMain(c *cli.Context) error {
 		"Archive":  archivecontroller.SetupWithManager,
 		"Check":    checkcontroller.SetupWithManager,
 		"Prune":    prunecontroller.SetupWithManager,
+
+		"CITABackup":     citabackupcontroller.SetupWithManager,
+		"CITARestore":    citarestorecontroller.SetupWithManager,
+		"CITAFallback":   citafallbackcontroller.SetupWithManager,
+		"CITASwitchover": citaswitchovercontroller.SetupWithManager,
+		"CITAPrune":      citaprunecontroller.SetupWithManager,
+		"CITASchedule":   citaschedulecontroller.SetupWithManager,
 	} {
 		if setupErr := setupFn(mgr); setupErr != nil {
 			operatorLog.Error(setupErr, "unable to initialize operator mode", "step", "controller", "controller", name)
@@ -136,6 +151,7 @@ func k8upScheme() *runtime.Scheme {
 	scheme := runtime.NewScheme()
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(k8upv1.AddToScheme(scheme))
+	utilruntime.Must(citav1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 	return scheme
 }

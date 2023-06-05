@@ -1,0 +1,25 @@
+apiVersion: rivtower.com/v1cita
+kind: Backup
+metadata:
+  name: full-backup-to-local
+  namespace: app-rivspace
+spec:
+  node: chain-800049219682570240-0
+  deployMethod: python
+  action: StopAndStart
+  chain: chain-800049219682570240
+  dataType:
+    full:
+      includePaths:
+        - "data"
+        - "chain_data"
+  failedJobsHistoryLimit: 2
+  successfulJobsHistoryLimit: 2
+  backend:
+    repoPasswordSecretRef:
+      name: backup-repo
+      key: password
+    local:
+      mountPath: "/hello"
+      storageClass: "nas-client-provisioner"
+      size: 3Gi

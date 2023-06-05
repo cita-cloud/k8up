@@ -18,6 +18,18 @@ rules:
   - update
   - watch
 - apiGroups:
+  - apps
+  resources:
+  - statefulsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - batch
   resources:
   - jobs
@@ -50,8 +62,12 @@ rules:
   resources:
   - persistentvolumeclaims
   verbs:
+  - create
+  - delete
   - get
   - list
+  - patch
+  - update
   - watch
 - apiGroups:
   - ""
@@ -66,9 +82,16 @@ rules:
   resources:
   - pods
   verbs:
+  - '*'
   - get
   - list
   - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods/exec
+  verbs:
+  - '*'
 - apiGroups:
   - ""
   resources:
@@ -284,3 +307,138 @@ rules:
   - list
   - update
   - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  - roles
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - rivtower.com
+  resources:
+  - backups
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rivtower.com
+  resources:
+  - backups/finalizers
+  - backups/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rivtower.com
+  resources:
+  - blockheightfallbacks
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rivtower.com
+  resources:
+  - blockheightfallbacks/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rivtower.com
+  resources:
+  - prunes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rivtower.com
+  resources:
+  - prunes/finalizers
+  - prunes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rivtower.com
+  resources:
+  - restores
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rivtower.com
+  resources:
+  - restores/finalizers
+  - restores/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rivtower.com
+  resources:
+  - schedules
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rivtower.com
+  resources:
+  - schedules/finalizers
+  - schedules/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rivtower.com
+  resources:
+  - switchovers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rivtower.com
+  resources:
+  - switchovers/status
+  verbs:
+  - get
+  - patch
+  - update

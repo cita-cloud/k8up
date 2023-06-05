@@ -55,6 +55,15 @@ var (
 			&cli.StringFlag{Destination: &cfg.Config.KubeConfig, Name: "kubeconfig", EnvVars: []string{"KUBECONFIG"}, Usage: "Overwrite the default kubernetes config to use.", Hidden: true, Value: clientcmd.RecommendedHomeFile},
 
 			&cli.StringFlag{Destination: &cfg.Config.BackupDir, Name: "backupDir", EnvVars: []string{backupDirEnvKey}, Value: "/data", Usage: "Set from which directory the backup should be performed."},
+
+			&cli.StringFlag{Destination: &cfg.Config.NodeDeployMethod, Name: "nodeDeployMethod", Usage: "Method of node deploy, 'python' or 'cloud-config', customized for CITA"},
+			&cli.StringFlag{Destination: &cfg.Config.DataType, Name: "dataType", Usage: "Type of data, 'full' or 'state', customized for CITA"},
+			&cli.Int64Flag{Destination: &cfg.Config.BlockHeight, Name: "blockHeight", Usage: "The block height you want to state-backup or state-recover, customized for CITA"},
+			&cli.StringFlag{Destination: &cfg.Config.CITACrypto, Name: "crypto", Usage: "Type of node crypto, 'sm' or 'eth', customized for CITA", Value: "sm"},
+			&cli.StringFlag{Destination: &cfg.Config.CITAConsensus, Name: "consensus", Usage: "Type of node consensus, 'bft' or 'raft' or 'overlord', customized for CITA"},
+			&cli.BoolFlag{Destination: &cfg.Config.DeleteConsensusData, Name: "deleteConsensusData", Usage: "Delete consensus data or not"},
+			&cli.StringSliceFlag{Name: "path", Usage: "List of paths you want to backup"},
+
 			&cli.StringFlag{Destination: &cfg.Config.RestoreDir, Name: "restoreDir", EnvVars: []string{restoreDirEnvKey}, Value: "/data", Usage: "Set to which directory the restore should be performed."},
 
 			&cli.StringFlag{Destination: &cfg.Config.RestoreFilter, Name: "restoreFilter", Usage: "Simple filter to define what should get restored. For example the PVC name"},
@@ -97,6 +106,7 @@ func resticMain(c *cli.Context) error {
 
 	cfg.Config.Tags = c.StringSlice("tag")
 	cfg.Config.TargetPods = c.StringSlice("targetPods")
+	cfg.Config.Paths = c.StringSlice("path")
 
 	err := cfg.Config.Validate()
 	if err != nil {
@@ -123,7 +133,52 @@ func run(ctx context.Context, resticCLI *resticCli.Restic, mainLogger logr.Logge
 	}
 
 	if cfg.Config.DoPrune || cfg.Config.DoCheck || cfg.Config.DoRestore || cfg.Config.DoArchive {
-		return doNonBackupTasks(resticCLI)
+		err := doNonBackupTasks(resticCLI)
+		if err != nil {
+			return err
+		}
+		if cfg.Config.DataType == cfg.StateDataType {
+			// execute CITA state recover finally
+			mainLogger.Info("cloud-op", "block height", cfg.Config.BlockHeight, "crypto", cfg.Config.CITACrypto, "consensus", cfg.Config.CITAConsensus)
+			err := resticCLI.DoCITAStateRecover(cfg.Config.BlockHeight,
+				"/restore",
+				"/cita-config",
+				"/state_data",
+				cfg.Config.CITACrypto,
+				cfg.Config.CITAConsensus,
+				cfg.Config.DeleteConsensusData)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	if cfg.Config.DataType == cfg.StateDataType {
+		// execute CITA state backup first
+		backupPath := fmt.Sprintf("/state_data/%d", cfg.Config.BlockHeight)
+		err := os.MkdirAll(backupPath, os.ModeDir+os.ModePerm)
+		if err != nil {
+			return err
+		}
+		if cfg.Config.NodeDeployMethod == cfg.DeployByCloudConfig {
+			err = resticCLI.DoCITAStateBackup(cfg.Config.BlockHeight,
+				"/data/backup-source",
+				"/cita-config",
+				backupPath,
+				cfg.Config.CITACrypto,
+				cfg.Config.CITAConsensus)
+		} else if cfg.Config.NodeDeployMethod == cfg.DeployByPython {
+			err = resticCLI.DoCITAStateBackup(cfg.Config.BlockHeight,
+				"/data/backup-source",
+				"/data/backup-source",
+				backupPath,
+				cfg.Config.CITACrypto,
+				cfg.Config.CITAConsensus)
+		}
+		if err != nil {
+			return err
+		}
 	}
 
 	return doBackup(ctx, resticCLI, mainLogger)
@@ -208,7 +263,7 @@ func doRestore(resticCLI *resticCli.Restic) error {
 				AccessKey: cfg.Config.RestoreS3AccessKey,
 				SecretKey: cfg.Config.RestoreS3SecretKey,
 			},
-		}, cfg.Config.Tags); err != nil {
+		}, cfg.Config.Tags, cfg.Config.Paths, cfg.Config.DeleteConsensusData); err != nil {
 			return fmt.Errorf("restore job failed: %w", err)
 		}
 	}
@@ -231,7 +286,7 @@ func doBackup(ctx context.Context, resticCLI *resticCli.Restic, mainLogger logr.
 	}
 	mainLogger.Info("backups of annotated jobs have finished successfully")
 
-	err = resticCLI.Backup(cfg.Config.BackupDir, cfg.Config.Tags)
+	err = resticCLI.Backup(cfg.Config.BackupDir, cfg.Config.Tags, cfg.Config.Paths)
 	if err != nil {
 		return fmt.Errorf("backup job failed in dir '%s': %w", cfg.Config.BackupDir, err)
 	}

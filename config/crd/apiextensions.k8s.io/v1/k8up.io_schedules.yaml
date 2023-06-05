@@ -231,6 +231,14 @@ spec:
                         properties:
                           mountPath:
                             type: string
+                          pvc:
+                            description: if Pvc set, we will ignore StorageClass and
+                              Size fileds, that mean
+                            type: string
+                          size:
+                            type: string
+                          storageClass:
+                            type: string
                         type: object
                       repoPasswordSecretRef:
                         description: RepoPasswordSecretRef references a secret key
@@ -823,6 +831,14 @@ spec:
                     properties:
                       mountPath:
                         type: string
+                      pvc:
+                        description: if Pvc set, we will ignore StorageClass and Size
+                          fileds, that mean
+                        type: string
+                      size:
+                        type: string
+                      storageClass:
+                        type: string
                     type: object
                   repoPasswordSecretRef:
                     description: RepoPasswordSecretRef references a secret key to
@@ -1135,6 +1151,14 @@ spec:
                       local:
                         properties:
                           mountPath:
+                            type: string
+                          pvc:
+                            description: if Pvc set, we will ignore StorageClass and
+                              Size fileds, that mean
+                            type: string
+                          size:
+                            type: string
+                          storageClass:
                             type: string
                         type: object
                       repoPasswordSecretRef:
@@ -1686,6 +1710,14 @@ spec:
                       local:
                         properties:
                           mountPath:
+                            type: string
+                          pvc:
+                            description: if Pvc set, we will ignore StorageClass and
+                              Size fileds, that mean
+                            type: string
+                          size:
+                            type: string
+                          storageClass:
                             type: string
                         type: object
                       repoPasswordSecretRef:
@@ -2400,6 +2432,14 @@ spec:
                         properties:
                           mountPath:
                             type: string
+                          pvc:
+                            description: if Pvc set, we will ignore StorageClass and
+                              Size fileds, that mean
+                            type: string
+                          size:
+                            type: string
+                          storageClass:
+                            type: string
                         type: object
                       repoPasswordSecretRef:
                         description: RepoPasswordSecretRef references a secret key
@@ -2996,6 +3036,14 @@ spec:
                       local:
                         properties:
                           mountPath:
+                            type: string
+                          pvc:
+                            description: if Pvc set, we will ignore StorageClass and
+                              Size fileds, that mean
+                            type: string
+                          size:
+                            type: string
+                          storageClass:
                             type: string
                         type: object
                       repoPasswordSecretRef:

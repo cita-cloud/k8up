@@ -1,0 +1,24 @@
+apiVersion: rivtower.com/v1cita
+kind: Prune
+metadata:
+  name: prune-test-1
+  namespace: zhujq
+spec:
+  node: test-chain-zenoh-overlord-node0
+  chain: test-chain-zenoh-overlord
+  retention:
+    keepLast: 1
+    keepDaily: 14
+  backend:
+    repoPasswordSecretRef:
+      name: backup-repo
+      key: password
+    s3:
+      endpoint: http://192.168.10.122:30289
+      bucket: k8up-full
+      accessKeyIDSecretRef:
+        name: minio-credentials
+        key: username
+      secretAccessKeySecretRef:
+        name: minio-credentials
+        key: password

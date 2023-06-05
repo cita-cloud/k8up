@@ -108,14 +108,14 @@ golangci-lint: $(golangci_bin) ## Run golangci linters
 .PHONY: docker-build
 docker-build: $(BIN_FILENAME) ## Build the docker image
 	docker build . \
-		--tag $(K8UP_QUAY_IMG) \
-		--tag $(K8UP_GHCR_IMG) \
-		--tag $(K8UP_E2E_IMG)
+    		--tag $(K8UP_E2E_IMG) \
+    		--tag $(CITA_NODE_IMG) \
+    		--build-arg CLOUD_OP_REGISTRY=$(CITA_REGISTRY) \
+    		--build-arg CLOUD_OP_TAG=$(CLOUD_OP_LATEST_TAG)
 
 .PHONY: docker-push
 docker-push: ## Push the docker image
-	docker push $(K8UP_QUAY_IMG)
-	docker push $(K8UP_GHCR_IMG)
+	docker push $(CITA_NODE_IMG)
 
 build-clean:
 	rm -rf dist/ bin/ cover.out $(BIN_FILENAME) $(WORK_DIR) $(CRD_FILE)

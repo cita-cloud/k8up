@@ -49,7 +49,7 @@ docs-generate-api: $(crd_ref_docs_bin) ## Generates API reference documentation
 	$(crd_ref_docs_bin) --source-path=api/v1 --config=docs/api-gen-config.yaml --renderer=asciidoctor --templates-dir=docs/api-templates --output-path=$(CRD_DOCS_REF_PATH)
 
 .PHONY: docs-generate
-docs-generate: docs-update-usage docs-generate-api
+docs-generate: docs-update-usage
 
 # This will clean the Antora Artifacts, not the npm artifacts
 .PHONY: docs-clean
